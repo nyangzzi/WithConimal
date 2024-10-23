@@ -1,29 +1,29 @@
 package com.nyangzzi.withconimal.domain.model.common
 
 /**
- * @param desertionNo 유기번호
- * @param filename Thumbnail Image
- * @param happenDt 접수일
- * @param happenPlace 발견장소
- * @param kindCd 품종
- * @param colorCd 색상
- * @param age 나이
- * @param weight 체중
- * @param noticeNo 공고번호
- * @param noticeSdt 공고시작일
- * @param noticeEdt 공고종료일
- * @param popfile Image
- * @param processState 상태
- * @param sexCd 성별
- * @param neuterYn 중성화여부
- * @param specialMark 특징
- * @param careNm 보호소이름
- * @param careTel 보호소전화번호
- * @param careAddr 보호장소
- * @param orgNm 관할기관
- * @param chargeNm 담당자
- * @param officetel 담당자연락처
- * @param noticeComment 특이사항
+ * @property desertionNo 유기번호
+ * @property filename Thumbnail Image
+ * @property happenDt 접수일
+ * @property happenPlace 발견장소
+ * @property kindCd 품종
+ * @property colorCd 색상
+ * @property age 나이
+ * @property weight 체중
+ * @property noticeNo 공고번호
+ * @property noticeSdt 공고시작일
+ * @property noticeEdt 공고종료일
+ * @property popfile Image
+ * @property processState 상태
+ * @property sexCd 성별
+ * @property neuterYn 중성화여부
+ * @property specialMark 특징
+ * @property careNm 보호소이름
+ * @property careTel 보호소전화번호
+ * @property careAddr 보호장소
+ * @property orgNm 관할기관
+ * @property chargeNm 담당자
+ * @property officetel 담당자연락처
+ * @property noticeComment 특이사항
  **/
 data class AnimalInfo(
  val desertionNo: String? = null,
