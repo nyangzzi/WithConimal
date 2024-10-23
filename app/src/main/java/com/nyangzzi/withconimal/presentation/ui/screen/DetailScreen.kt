@@ -2,28 +2,30 @@ package com.nyangzzi.withconimal.presentation.ui.screen
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,16 +35,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.nyangzzi.withconimal.R
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
-import com.nyangzzi.withconimal.presentation.feature.feed.FeedViewModel
 import com.nyangzzi.withconimal.presentation.util.Utils
+import com.nyangzzi.withconimal.presentation.util.noRippleClickable
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
 
 @Composable
@@ -54,31 +54,36 @@ fun DetailScreen(info: AnimalInfo) {
 
 @Composable
 fun DetailContent(info: AnimalInfo) {
+
     Column(
-        modifier = Modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background)
+            .padding(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
+        Text(
+            "나를 소개할게요!",
+            fontSize = 24.sp,
+            fontWeight = FontWeight(800),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = MaterialTheme.colorScheme.background),
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
 
-            ) {
-
-            Text(
-                "나를 소개할게요!",
-                fontSize = 24.sp,
-                fontWeight = FontWeight(800),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            AnimalImage(imageUrl = info.popfile)
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                AnimalImage(imageUrl = info.popfile)
+            }
 
             DetailInfo(
                 specialMark = info.specialMark,
+                noticeComment = info.noticeComment,
                 kindCd = info.kindCd,
                 colorCd = info.colorCd,
                 age = info.age,
@@ -87,8 +92,44 @@ fun DetailContent(info: AnimalInfo) {
                 neuterYn = info.neuterYn
             )
 
+            MarginContent()
+
+            CareRoomInfo(
+                careNm = info.careNm,
+                careTel = info.careTel,
+                careAddr = info.careAddr,
+                orgNm = info.orgNm,
+                chargeNm = info.chargeNm,
+                officetel = info.officetel
+            )
+
+            MarginContent()
+
+            NoticeInfo(
+                noticeNo = info.noticeNo,
+                noticeSdt = info.noticeSdt,
+                noticeEdt = info.noticeEdt,
+                processState = info.processState
+            )
+
+            MarginContent()
+
+            AdoptionInfo(
+                desertionNo = info.desertionNo,
+                happenDt = info.happenDt,
+                happenPlace = info.happenPlace
+            )
+
         }
     }
+}
+
+@Composable
+private fun MarginContent() {
+    Divider(modifier = Modifier
+        .fillMaxWidth()
+        .height(10.dp),
+        color = MaterialTheme.colorScheme.inverseOnSurface)
 }
 
 @Composable
@@ -111,9 +152,11 @@ private fun AnimalImage(imageUrl: String?) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DetailInfo(
     specialMark: String?,
+    noticeComment: String?,
     kindCd: String?,
     colorCd: String?,
     age: String?,
@@ -165,7 +208,9 @@ private fun DetailInfo(
         )
     )
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -200,20 +245,30 @@ private fun DetailInfo(
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
+        noticeComment?.let{
+            Text(
+                text = it,
+                fontSize = 18.sp,
+                fontWeight = FontWeight(500),
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 
-    LazyVerticalStaggeredGrid(
-        modifier = Modifier.fillMaxWidth(),
-        columns = StaggeredGridCells.Adaptive(100.dp),
-        verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(infoList.size) {
-            FeatureInfo(
-                icon = infoList[it].icon,
-                title = infoList[it].title,
-                text = infoList[it].text
-            )
+    Box(modifier = Modifier.fillMaxWidth()) {
+        FlowRow(
+            modifier = Modifier.align(Alignment.Center),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            infoList.map {
+                FeatureInfo(
+                    icon = it.icon,
+                    title = it.title,
+                    text = it.text
+                )
+            }
+
         }
     }
 
@@ -233,7 +288,7 @@ fun FeatureInfo(@DrawableRes icon: Int, title: String, text: String?, iconTint: 
             modifier = Modifier
                 .background(color = MaterialTheme.colorScheme.background)
                 .padding(8.dp)
-                .defaultMinSize(minWidth = 84.dp)
+                .defaultMinSize(minWidth = 96.dp)
                 .height(100.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterVertically)
@@ -257,6 +312,245 @@ fun FeatureInfo(@DrawableRes icon: Int, title: String, text: String?, iconTint: 
                 color = MaterialTheme.colorScheme.onSurface
             )
 
+        }
+    }
+}
+
+@Composable
+private fun CareRoomInfo(
+    careNm: String?,
+    careTel: String?,
+    careAddr: String?,
+    orgNm: String?,
+    chargeNm: String?,
+    officetel: String?
+) {
+
+    var isShown by remember {
+        mutableStateOf(true)
+    }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .noRippleClickable { isShown = !isShown }
+                .padding(horizontal = 16.dp),
+        ) {
+
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = R.drawable.ic_heart_lock),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.secondary
+            )
+
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "저의 사랑이 되어주세요!",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(id = if (isShown) R.drawable.ic_up_line else R.drawable.ic_down_line),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+
+        }
+
+        if (isShown) {
+
+            Column(
+                modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                Divider(modifier = Modifier.fillMaxWidth().height(1.dp),
+                    color = MaterialTheme.colorScheme.inverseOnSurface)
+
+                Text(
+                    text = "[보호소]",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight(700),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                TextContent(title = "이름", text = careNm)
+                TextContent(title = "전화번호", text = careTel)
+                TextContent(title = "보호 장소", text = careAddr)
+                TextContent(title = "관할 기관", text = orgNm)
+
+                Text(
+                    modifier = Modifier.padding(top = 12.dp),
+                    text = "[담당자]",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight(700),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                TextContent(title = "이름", text = chargeNm)
+                TextContent(title = "연락처", text = officetel)
+            }
+
+
+        }
+
+    }
+}
+
+@Composable
+private fun NoticeInfo(
+    noticeNo: String?,
+    noticeSdt: String?,
+    noticeEdt: String?,
+    processState: String?
+) {
+
+    var isShown by remember {
+        mutableStateOf(true)
+    }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .noRippleClickable { isShown = !isShown }
+                .padding(horizontal = 16.dp),
+        ) {
+
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = R.drawable.ic_heart_hand),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.secondary
+            )
+
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "운명적 만남을 기다리고 있어요",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(id = if (isShown) R.drawable.ic_up_line else R.drawable.ic_down_line),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+
+        }
+
+        if (isShown) {
+
+            Column(
+                modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Divider(modifier = Modifier.fillMaxWidth().height(1.dp),
+                    color = MaterialTheme.colorScheme.inverseOnSurface)
+                TextContent(title = "공고 번호", text = noticeNo)
+                TextContent(title = "공고일", text = "${Utils.dateFormat(noticeSdt)} ~ ${Utils.dateFormat(noticeEdt)}")
+                TextContent(title = "공고 상태", text = processState)
+            }
+
+        }
+
+    }
+}
+
+@Composable
+private fun AdoptionInfo(
+    desertionNo: String?,
+    happenDt: String?,
+    happenPlace: String?
+) {
+
+    var isShown by remember {
+        mutableStateOf(true)
+    }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .noRippleClickable { isShown = !isShown }
+                .padding(horizontal = 16.dp),
+        ) {
+
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = R.drawable.ic_heart_broken),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.secondary
+            )
+
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "혹시 저를 찾고 있나요?",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(id = if (isShown) R.drawable.ic_up_line else R.drawable.ic_down_line),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+
+        }
+
+        if (isShown) {
+            Column(
+                modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Divider(modifier = Modifier.fillMaxWidth().height(1.dp),
+                    color = MaterialTheme.colorScheme.inverseOnSurface)
+                TextContent(title = "유기 번호", text = desertionNo)
+                TextContent(title = "접수일", text = Utils.dateFormat(happenDt))
+                TextContent(title = "발견 장소", text = happenPlace)
+            }
+        }
+
+    }
+}
+
+@Composable
+private fun TextContent(title: String, text: String?) {
+    text?.let {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight(600),
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Text(
+                modifier = Modifier.padding(top = 2.dp),
+                text = text,
+                fontSize = 16.sp,
+                fontWeight = FontWeight(400),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
