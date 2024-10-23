@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -15,6 +17,12 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField(
+            "String",
+            "common_api_key",
+            getApiKey("common_api_key")
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -40,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -64,8 +73,12 @@ dependencies {
 
     implementation(libs.gson)
     implementation(libs.retrofit2)
+    implementation(libs.gson.converter)
+    implementation(libs.retrofit.scalars)
+    implementation(libs.logging.interceptor)
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
@@ -78,3 +91,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
+fun getApiKey(propertyKey: String): String {
+    val properties = Properties()
+    properties.load(File(rootDir, "local.properties").inputStream())
+    return properties.getProperty(propertyKey)
+}
