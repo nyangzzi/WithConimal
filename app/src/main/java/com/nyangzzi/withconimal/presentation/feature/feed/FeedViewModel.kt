@@ -13,6 +13,7 @@ import com.nyangzzi.withconimal.domain.usecase.SearchAnimalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,7 +27,13 @@ class FeedViewModel @Inject constructor(
     val uiState: StateFlow<FeedUiState> = _uiState
 
     val animalPagingFlow = Pager(PagingConfig(pageSize = 20)) {
-        AnimalPagingSource(searchAnimalUseCase, initialRequest = SearchAnimalRequest())
+        val result = AnimalPagingSource(
+            searchAnimalUseCase,
+            initialRequest = SearchAnimalRequest(),
+            totalCnt = { cnt ->
+                _uiState.update { it.copy(totalCnt = cnt) }
+            })
+        result
     }.flow.cachedIn(viewModelScope)
 
     fun onEvent(event: FeedEvent) {

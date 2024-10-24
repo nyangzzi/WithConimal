@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +39,16 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.nyangzzi.withconimal.R
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedEvent
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedUiState
@@ -70,41 +81,122 @@ private fun FeedContent(
     pagingItems: LazyPagingItems<AnimalInfo>?,
     uiState: FeedUiState, onClickContent: (AnimalInfo) -> Unit
 ) {
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
 
-        pagingItems?.let {
-            items(pagingItems.itemCount) {
-                Box(
+        if (uiState.totalCnt > 0) {
+            Row(verticalAlignment = Alignment.Bottom) {
+                Column(
                     modifier = Modifier
-                        .clickable {
-                            pagingItems[it]?.let { it1 -> onClickContent(it1) }
-                        }
+                        .weight(1f)
+                        .padding(top = 32.dp, start = 22.dp, bottom = 4.dp)
                 ) {
-                    AnimalComponent(
-                        imageUrl = pagingItems[it]?.popfile ?: "",
-                        processState = pagingItems[it]?.processState,
-                        kindCd = pagingItems[it]?.kindCd ?: ""
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = Utils.formatComma(uiState.totalCnt),
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            text = " 마리의 소중한 생명이",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                    Text(
+                        text = "가족을 기다리고 있어요",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+
+                Icon(
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(42.dp)
+                        .clip(shape = CircleShape)
+                        .clickable {  }
+                        .padding(8.dp),
+                    painter = painterResource(id = R.drawable.ic_filter),
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+            }
+        }
+
+        Box {
+
+            val scrollState = rememberLazyListState()
+            LazyColumn(
+                state = scrollState,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                pagingItems?.let {
+                    items(pagingItems.itemCount) {
+                        Box(
+                            modifier = Modifier
+                                .clickable {
+                                    pagingItems[it]?.let { it1 -> onClickContent(it1) }
+                                }
+                        ) {
+                            AnimalComponent(
+                                imageUrl = pagingItems[it]?.popfile ?: "",
+                                processState = pagingItems[it]?.processState,
+                                kindCd = pagingItems[it]?.kindCd ?: ""
+                            )
+                        }
+                    }
+                }
+
+                when {
+                    pagingItems?.loadState?.refresh is LoadState.Loading -> {
+                        item { CircularProgressIndicator() }
+                    }
+
+                    pagingItems?.loadState?.append is LoadState.Loading -> {
+                        item { CircularProgressIndicator() }
+                    }
+
+                    pagingItems?.loadState?.refresh is LoadState.Error -> {
+                        item {
+                            Text(text = "Error loading animals")
+                        }
+                    }
+                }
+
+            }
+
+            var isTop by remember { mutableStateOf(false) }
+            LaunchedEffect(key1 = isTop) {
+                if (isTop) {
+                    scrollState.animateScrollToItem(0)
+                    isTop = false
+                }
+
+            }
+            if ((pagingItems?.itemCount ?: 0) > 0) {
+                FloatingActionButton(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(30.dp), onClick = { isTop = true }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_up_line),
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
+
         }
-
-        when {
-            pagingItems?.loadState?.refresh is LoadState.Loading -> {
-                item { CircularProgressIndicator() }
-            }
-
-            pagingItems?.loadState?.append is LoadState.Loading -> {
-                item { CircularProgressIndicator() }
-            }
-
-            pagingItems?.loadState?.refresh is LoadState.Error -> {
-                item {
-                    Text(text = "Error loading animals")
-                }
-            }
-        }
-
     }
 }
 
@@ -198,6 +290,6 @@ fun ContentPreview() {
 @Composable
 fun ContentPreviewDark() {
     WithconimalTheme(darkTheme = true) {
-        FeedContent(uiState = FeedUiState(),  pagingItems = null) {}
+        FeedContent(uiState = FeedUiState(), pagingItems = null) {}
     }
 }

@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -210,10 +211,8 @@ fun DetailContent(info: AnimalInfo, onClickBack: () -> Unit = {}) {
 
 @Composable
 private fun MarginContent() {
-    Divider(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(10.dp),
+    HorizontalDivider(
+        thickness = 8.dp,
         color = MaterialTheme.colorScheme.inverseOnSurface
     )
 }
@@ -499,10 +498,7 @@ private fun CareRoomInfo(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp),
+                HorizontalDivider(
                     color = MaterialTheme.colorScheme.inverseOnSurface
                 )
 
@@ -589,10 +585,7 @@ private fun NoticeInfo(
                 modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp),
+                HorizontalDivider(
                     color = MaterialTheme.colorScheme.inverseOnSurface
                 )
                 TextContent(title = "공고 번호", text = noticeNo)
@@ -659,10 +652,7 @@ private fun AdoptionInfo(
                 modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp),
+                HorizontalDivider(
                     color = MaterialTheme.colorScheme.inverseOnSurface
                 )
                 TextContent(title = "유기 번호", text = desertionNo)

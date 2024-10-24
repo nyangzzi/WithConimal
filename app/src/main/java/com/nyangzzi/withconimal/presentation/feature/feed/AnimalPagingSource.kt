@@ -6,11 +6,15 @@ import com.nyangzzi.withconimal.data.network.ResultWrapper
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
 import com.nyangzzi.withconimal.domain.usecase.SearchAnimalUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 
-class AnimalPagingSource (
+class AnimalPagingSource(
     private val searchAnimalUseCase: SearchAnimalUseCase,
-    private val initialRequest: SearchAnimalRequest
+    private val initialRequest: SearchAnimalRequest,
+    val totalCnt: (Int)->Unit,
 ) : PagingSource<Int, AnimalInfo>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, AnimalInfo> {
@@ -20,16 +24,22 @@ class AnimalPagingSource (
             // 서버에서 데이터를 가져옴
             when (val result = searchAnimalUseCase(initialRequest, currentPage).first()) {
                 is ResultWrapper.Success -> {
-                    val data = result.data
+                    val currentLoadedItems =
+                        (currentPage - 1) * params.loadSize + result.data.second.size
+
+                    totalCnt(result.data.first)
+
                     LoadResult.Page(
-                        data = data,  // 서버에서 받은 동물 데이터 리스트
+                        data = result.data.second,  // 서버에서 받은 동물 데이터 리스트
                         prevKey = if (currentPage == 1) null else currentPage - 1,  // 첫 페이지는 이전 페이지가 없음
-                        nextKey = if (data.isEmpty()) null else currentPage + 1  // 더 이상 데이터가 없으면 다음 페이지 없음
+                        nextKey = if (currentLoadedItems >= result.data.first || result.data.second.isEmpty()) null else currentPage + 1  // 더 이상 데이터가 없으면 다음 페이지 없음
                     )
                 }
+
                 is ResultWrapper.Error -> {
                     LoadResult.Error(Throwable("Error fetching data"))
                 }
+
                 else -> {
                     LoadResult.Error(Throwable("Unexpected result"))
                 }
@@ -47,3 +57,5 @@ class AnimalPagingSource (
         }
     }
 }
+
+
