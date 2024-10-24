@@ -6,5 +6,5 @@ import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
 import kotlinx.coroutines.flow.Flow
 
 interface NetworkRepository {
-    fun searchAnimal(request: SearchAnimalRequest, pageNo: Int): Flow<ResultWrapper<List<AnimalInfo>>>
+    suspend fun searchAnimal(request: SearchAnimalRequest, pageNo: Int): Flow<ResultWrapper<List<AnimalInfo>>>
 }

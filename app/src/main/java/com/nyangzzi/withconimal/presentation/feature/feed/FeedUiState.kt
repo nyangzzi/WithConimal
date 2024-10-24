@@ -5,7 +5,7 @@ import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
 
 data class FeedUiState (
     val animals : List<AnimalInfo> = emptyList(),
-    val selectedIndex: Int? = null,
+    val selectData: AnimalInfo? = null,
 
     val isPickDate: Boolean = false,
     val request: SearchAnimalRequest = SearchAnimalRequest()

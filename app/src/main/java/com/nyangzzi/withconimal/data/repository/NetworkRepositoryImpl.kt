@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 
 class NetworkRepositoryImpl : NetworkRepository {
-    override fun searchAnimal(request: SearchAnimalRequest, pageNo: Int): Flow<ResultWrapper<List<AnimalInfo>>> = flow {
+    override suspend fun searchAnimal(request: SearchAnimalRequest, pageNo: Int): Flow<ResultWrapper<List<AnimalInfo>>> = flow {
         SearchAnimalManager.getService().getAnimalList(
             serviceKey = BuildConfig.common_api_key,
             bgnde = request.bgnde,
@@ -27,7 +27,7 @@ class NetworkRepositoryImpl : NetworkRepository {
             state = request.state,
             neuterYn = request.neuterYn,
             pageNo = pageNo,
-            numOfRows = 10,
+            numOfRows = 20,
             type = "json",
             )
             .onSuccess {
@@ -37,5 +37,5 @@ class NetworkRepositoryImpl : NetworkRepository {
                 emit(ResultWrapper.Error(it.message ?: "error: Failure Get Animal List"))
             }
 
-    }.onStart { emit(ResultWrapper.Loading) }.flowOn(Dispatchers.IO)
+    }.flowOn(Dispatchers.IO)
 }

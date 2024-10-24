@@ -85,6 +85,10 @@ dependencies {
 
     implementation(libs.coil.compose)
 
+    implementation(libs.paging.compose)
+    implementation(libs.androidx.paging.common.android)
+    implementation(libs.paging.runtime)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -7,5 +7,5 @@ import javax.inject.Inject
 class SearchAnimalUseCase @Inject constructor(
     private val networkRepository: NetworkRepository
 ){
-    operator fun invoke(request: SearchAnimalRequest, pageNo: Int) = networkRepository.searchAnimal(request = request, pageNo = pageNo)
+    suspend operator fun invoke(request: SearchAnimalRequest, pageNo: Int) = networkRepository.searchAnimal(request = request, pageNo = pageNo)
 }

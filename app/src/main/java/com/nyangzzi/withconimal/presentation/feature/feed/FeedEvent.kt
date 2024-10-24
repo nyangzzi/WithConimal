@@ -1,5 +1,7 @@
 package com.nyangzzi.withconimal.presentation.feature.feed
 
+import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
+
 sealed class FeedEvent {
-    data class UpdateSelectIndex(val index: Int?) : FeedEvent()
+    data class UpdateSelectInfo(val data: AnimalInfo?) : FeedEvent()
 }
