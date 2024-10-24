@@ -19,6 +19,7 @@ loggingInterceptor = "5.0.0-alpha.3"
 #hilt
 hilt = "2.49"
 hilt-navigation-compose = "1.0.0"
+navigationCompose = "2.5.3"
 lifecycleRuntimeComposeAndroid = "2.8.6"
 
 #coil
@@ -50,6 +51,7 @@ retrofit-scalars = {group="com.squareup.retrofit2", name = "converter-scalars", 
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
+navigation-compose = {group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose"}
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
 logging-interceptor = {group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "loggingInterceptor"}
 

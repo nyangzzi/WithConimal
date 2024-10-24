@@ -1,5 +1,6 @@
 package com.nyangzzi.withconimal.presentation.ui.screen
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -48,21 +49,33 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.nyangzzi.withconimal.R
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
+import com.nyangzzi.withconimal.presentation.feature.feed.FeedEvent
+import com.nyangzzi.withconimal.presentation.feature.feed.FeedViewModel
+import com.nyangzzi.withconimal.presentation.navigation.Screens
 import com.nyangzzi.withconimal.presentation.util.Utils
 import com.nyangzzi.withconimal.presentation.util.noRippleClickable
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
 
 @Composable
-fun DetailScreen(info: AnimalInfo) {
+fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
 
-    DetailContent(info = info)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    uiState.selectedIndex?.let {
+        DetailContent(info = uiState.animals[it],
+            onClickBack = {
+                viewModel.onEvent(FeedEvent.UpdateSelectIndex(index = null))
+                navController.popBackStack()
+            })
+    }
 }
 
 @Composable
