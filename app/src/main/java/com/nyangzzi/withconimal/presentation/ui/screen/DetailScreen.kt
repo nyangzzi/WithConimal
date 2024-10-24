@@ -1,42 +1,55 @@
 package com.nyangzzi.withconimal.presentation.ui.screen
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.nyangzzi.withconimal.R
@@ -53,7 +66,7 @@ fun DetailScreen(info: AnimalInfo) {
 }
 
 @Composable
-fun DetailContent(info: AnimalInfo) {
+fun DetailContent(info: AnimalInfo, onClickBack: () -> Unit = {}) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -63,23 +76,86 @@ fun DetailContent(info: AnimalInfo) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
-        Text(
-            "나를 소개할게요!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight(800),
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        val minScroll = 0f
+        val maxScroll = 300f
+
+        val scrollState = rememberScrollState()
+
+        val alpha by remember {
+            derivedStateOf {
+                (scrollState.value / (maxScroll * 2)).coerceIn(0f, 1f) // 0에서 1 사이로 제한
+            }
+        }
+        val animatedAlpha by animateFloatAsState(targetValue = alpha, label = "")
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+                .height(56.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Icon(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(shape = CircleShape)
+                    .clickable { onClickBack() }
+                    .padding(12.dp),
+                painter = painterResource(id = R.drawable.ic_left_line),
+                contentDescription = ""
+            )
+
+
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .alpha(animatedAlpha),
+                text = info.kindCd ?: "",
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight(800),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Icon(
+                modifier = Modifier
+                    .size(56.dp)
+                    .noRippleClickable { /*todo*/ }
+                    .padding(12.dp)
+                    .alpha(animatedAlpha),
+                painter = painterResource(id = R.drawable.ic_heart_line),
+                contentDescription = ""
+            )
+
+        }
+
+        val boxHeight by remember {
+            derivedStateOf {
+                max(minScroll.dp, maxScroll.dp - (scrollState.value / 2).dp)
+            }
+        }
+        val animatedBoxHeight by animateDpAsState(targetValue = boxHeight, label = "")
+
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .height(animatedBoxHeight)
+        ) {
+            AnimalImage(
+                processState = info.processState,
+                imageUrl = info.popfile
+            )
+        }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-
-            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                AnimalImage(imageUrl = info.popfile)
-            }
 
             DetailInfo(
                 specialMark = info.specialMark,
@@ -126,31 +202,74 @@ fun DetailContent(info: AnimalInfo) {
 
 @Composable
 private fun MarginContent() {
-    Divider(modifier = Modifier
-        .fillMaxWidth()
-        .height(10.dp),
-        color = MaterialTheme.colorScheme.inverseOnSurface)
+    Divider(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(10.dp),
+        color = MaterialTheme.colorScheme.inverseOnSurface
+    )
 }
 
 @Composable
-private fun AnimalImage(imageUrl: String?) {
+private fun AnimalImage(
+    processState: String?,
+    imageUrl: String?
+) {
 
-    imageUrl?.let {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(Utils.setImageUrl(imageUrl))
-                .crossfade(true)
-                .build(),
-            contentDescription = "",
-            contentScale = ContentScale.Crop,
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        imageUrl?.let {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(Utils.setImageUrl(imageUrl))
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp)),
+                placeholder = painterResource(id = R.drawable.ic_loading_image)
+            )
+        }
+
+        processState?.let {
+            Box(
+                modifier = Modifier
+                    .padding(22.dp)
+                    .background(color = Color(0xAA000000), shape = RoundedCornerShape(20.dp))
+                    .padding(vertical = 6.dp, horizontal = 12.dp)
+            ) {
+                Text(text = it, color = Color.White)
+            }
+        }
+
+
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            placeholder = painterResource(id = R.drawable.ic_loading_image)
-        )
+                .padding(22.dp)
+                .align(Alignment.BottomEnd),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Icon(
+                modifier = Modifier.size(32.dp),
+                painter = painterResource(id = R.drawable.ic_heart_line),
+                contentDescription = "",
+                tint = Color.White
+            )
+
+            Icon(
+                modifier = Modifier.size(32.dp),
+                painter = painterResource(id = R.drawable.ic_sharing),
+                contentDescription = "",
+                tint = Color.White
+            )
+        }
     }
 }
+
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -245,7 +364,7 @@ private fun DetailInfo(
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
-        noticeComment?.let{
+        noticeComment?.let {
             Text(
                 text = it,
                 fontSize = 18.sp,
@@ -372,8 +491,12 @@ private fun CareRoomInfo(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                Divider(modifier = Modifier.fillMaxWidth().height(1.dp),
-                    color = MaterialTheme.colorScheme.inverseOnSurface)
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp),
+                    color = MaterialTheme.colorScheme.inverseOnSurface
+                )
 
                 Text(
                     text = "[보호소]",
@@ -458,10 +581,17 @@ private fun NoticeInfo(
                 modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Divider(modifier = Modifier.fillMaxWidth().height(1.dp),
-                    color = MaterialTheme.colorScheme.inverseOnSurface)
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp),
+                    color = MaterialTheme.colorScheme.inverseOnSurface
+                )
                 TextContent(title = "공고 번호", text = noticeNo)
-                TextContent(title = "공고일", text = "${Utils.dateFormat(noticeSdt)} ~ ${Utils.dateFormat(noticeEdt)}")
+                TextContent(
+                    title = "공고일",
+                    text = "${Utils.dateFormat(noticeSdt)} ~ ${Utils.dateFormat(noticeEdt)}"
+                )
                 TextContent(title = "공고 상태", text = processState)
             }
 
@@ -521,8 +651,12 @@ private fun AdoptionInfo(
                 modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Divider(modifier = Modifier.fillMaxWidth().height(1.dp),
-                    color = MaterialTheme.colorScheme.inverseOnSurface)
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp),
+                    color = MaterialTheme.colorScheme.inverseOnSurface
+                )
                 TextContent(title = "유기 번호", text = desertionNo)
                 TextContent(title = "접수일", text = Utils.dateFormat(happenDt))
                 TextContent(title = "발견 장소", text = happenPlace)
