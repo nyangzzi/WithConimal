@@ -612,6 +612,7 @@ private inline fun InfoParent(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(vertical = 12.dp, horizontal = 32.dp)
+                    .padding(bottom = 6.dp)
             ) {
                 content()
             }

@@ -8,14 +8,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.nyangzzi.withconimal.presentation.ui.screen.BottomNavScreen
 import com.nyangzzi.withconimal.presentation.ui.screen.DetailScreen
+import com.nyangzzi.withconimal.presentation.ui.screen.FavoriteScreen
 import com.nyangzzi.withconimal.presentation.ui.screen.FeedScreen
 
 @Composable
-fun NavGraph() {
-
-    val navController = rememberNavController()
-
+fun NavGraph(navController: NavHostController) {
 
     NavHost(navController = navController, startDestination = Screens.Feed.route) {
 
@@ -39,27 +38,16 @@ fun NavGraph() {
             )
         }
 
-//        navigation(startDestination = Screens.Feed.route, route = Screens.FeedDetailGraph.route) {
-//
-//
-//            composable(route = Screens.Feed.route) {
-//                val feedViewModel: FeedViewModel =
-//                    hiltViewModel(navController.getBackStackEntry(Screens.FeedDetailGraph.route))
-//                FeedScreen(
-//                    navController = navController,
-//                    viewModel = feedViewModel
-//                )
-//            }
-//
-//            composable(route = Screens.Detail.route) {
-//                val feedViewModel: FeedViewModel =
-//                    hiltViewModel(navController.getBackStackEntry(Screens.FeedDetailGraph.route))
-//                DetailScreen(
-//                    navController = navController,
-//                    viewModel = feedViewModel
-//                )
-//            }
-//        }
+        composable(route = Screens.Favorite.route) {backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(Screens.Feed.route)
+            }
+            FavoriteScreen(
+                navController = navController,
+                viewModel = hiltViewModel(parentEntry)
+            )
+        }
+
     }
 }
 

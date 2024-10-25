@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.nyangzzi.withconimal.presentation.navigation.NavGraph
+import com.nyangzzi.withconimal.presentation.ui.screen.BottomNavScreen
 import com.nyangzzi.withconimal.presentation.ui.screen.FeedScreen
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,9 +26,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WithconimalTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)){
-                        NavGraph()
+                val navController = rememberNavController()
+                Scaffold(modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        BottomNavScreen(navController = navController)
+                    }) { innerPadding ->
+                    Box(modifier = Modifier.padding(innerPadding)) {
+                        NavGraph(navController = navController)
                     }
                 }
             }
