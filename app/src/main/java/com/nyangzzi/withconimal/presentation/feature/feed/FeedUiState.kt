@@ -8,6 +8,7 @@ data class FeedUiState (
     val selectData: AnimalInfo? = null,
 
     val totalCnt : Int = 0,
+    val isShowImageExpand: Boolean = false,
 
     val isPickDate: Boolean = false,
     val request: SearchAnimalRequest = SearchAnimalRequest()

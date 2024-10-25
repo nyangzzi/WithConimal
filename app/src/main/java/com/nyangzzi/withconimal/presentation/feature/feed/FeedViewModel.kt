@@ -39,12 +39,19 @@ class FeedViewModel @Inject constructor(
     fun onEvent(event: FeedEvent) {
         when (event) {
             is FeedEvent.UpdateSelectInfo -> updateSelectData(selectData = event.data)
+            is FeedEvent.SetShowImageExpand -> setShowImageExpand(isShow = event.isShow)
         }
     }
 
     private fun updateSelectData(selectData: AnimalInfo?) {
         _uiState.update {
             it.copy(selectData = selectData)
+        }
+    }
+
+    private fun setShowImageExpand(isShow: Boolean) {
+        _uiState.update {
+            it.copy(isShowImageExpand = isShow)
         }
     }
 

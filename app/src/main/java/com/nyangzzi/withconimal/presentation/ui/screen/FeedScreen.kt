@@ -86,11 +86,16 @@ private fun FeedContent(
     ) {
 
         if (uiState.totalCnt > 0) {
-            Row(verticalAlignment = Alignment.Bottom) {
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier
+                    .padding(top = 32.dp)
+                    .padding(horizontal = 16.dp)
+            ) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(top = 32.dp, start = 22.dp, bottom = 4.dp)
+                        .padding(start = 8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
@@ -116,10 +121,9 @@ private fun FeedContent(
 
                 Icon(
                     modifier = Modifier
-                        .padding(end = 8.dp)
                         .size(42.dp)
                         .clip(shape = CircleShape)
-                        .clickable {  }
+                        .clickable { }
                         .padding(8.dp),
                     painter = painterResource(id = R.drawable.ic_filter),
                     contentDescription = "",
@@ -130,9 +134,9 @@ private fun FeedContent(
         }
 
         Box {
-
             val scrollState = rememberLazyListState()
             LazyColumn(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 4.dp),
                 state = scrollState,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -213,10 +217,10 @@ private fun AnimalComponent(
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(16.dp)
             )
             .background(color = MaterialTheme.colorScheme.background)
-            .padding(12.dp),
+            .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
 
@@ -280,7 +284,7 @@ private fun AnimalComponent(
 
 @Preview(showBackground = true)
 @Composable
-fun ContentPreview() {
+private fun ContentPreview() {
     WithconimalTheme {
         FeedContent(uiState = FeedUiState(), pagingItems = null) {}
     }
@@ -288,7 +292,7 @@ fun ContentPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun ContentPreviewDark() {
+private fun ContentPreviewDark() {
     WithconimalTheme(darkTheme = true) {
         FeedContent(uiState = FeedUiState(), pagingItems = null) {}
     }

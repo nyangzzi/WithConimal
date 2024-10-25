@@ -65,8 +65,15 @@ fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+
     uiState.selectData?.let {
+        ImageExpandDialog(
+            isShown = uiState.isShowImageExpand,
+            imageUrl = it.popfile,
+            onDismiss = { viewModel.onEvent(FeedEvent.SetShowImageExpand(false)) })
+
         DetailContent(info = it,
+            onClickImage = { viewModel.onEvent(FeedEvent.SetShowImageExpand(true)) },
             onClickBack = {
                 viewModel.onEvent(FeedEvent.UpdateSelectInfo(data = null))
                 navController.popBackStack()
@@ -75,7 +82,11 @@ fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
 }
 
 @Composable
-fun DetailContent(info: AnimalInfo, onClickBack: () -> Unit = {}) {
+fun DetailContent(
+    info: AnimalInfo,
+    onClickImage: () -> Unit = {},
+    onClickBack: () -> Unit = {}
+) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -112,6 +123,7 @@ fun DetailContent(info: AnimalInfo, onClickBack: () -> Unit = {}) {
                     .clip(shape = CircleShape)
                     .clickable { onClickBack() }
                     .padding(12.dp),
+                tint = MaterialTheme.colorScheme.onSurface,
                 painter = painterResource(id = R.drawable.ic_left_line),
                 contentDescription = ""
             )
@@ -155,6 +167,7 @@ fun DetailContent(info: AnimalInfo, onClickBack: () -> Unit = {}) {
         ) {
             AnimalImage(
                 processState = info.processState,
+                onClickImage = onClickImage,
                 imageUrl = info.popfile
             )
         }
@@ -220,6 +233,7 @@ private fun MarginContent() {
 @Composable
 private fun AnimalImage(
     processState: String?,
+    onClickImage: () -> Unit,
     imageUrl: String?
 ) {
 
@@ -237,7 +251,8 @@ private fun AnimalImage(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onClickImage() },
                 placeholder = painterResource(id = R.drawable.ic_loading_image)
             )
         }
@@ -253,22 +268,39 @@ private fun AnimalImage(
             }
         }
 
+        Icon(
+            modifier = Modifier
+                .padding(22.dp)
+                .align(Alignment.TopEnd)
+                .size(18.dp),
+            painter = painterResource(id = R.drawable.ic_maximize),
+            contentDescription = "",
+            tint = Color.White
+        )
+
 
         Row(
             modifier = Modifier
-                .padding(22.dp)
+                .padding(28.dp)
                 .align(Alignment.BottomEnd),
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
+            val iconModifier = Modifier
+                .size(38.dp)
+                .clip(shape = CircleShape)
+                .clickable { }
+                .padding(4.dp)
+
             Icon(
-                modifier = Modifier.size(32.dp),
+                modifier = iconModifier,
                 painter = painterResource(id = R.drawable.ic_heart_line),
                 contentDescription = "",
                 tint = Color.White
             )
 
             Icon(
-                modifier = Modifier.size(32.dp),
+                modifier = iconModifier,
                 painter = painterResource(id = R.drawable.ic_sharing),
                 contentDescription = "",
                 tint = Color.White
