@@ -63,9 +63,15 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pagingItems = viewModel.animalPagingFlow.collectAsLazyPagingItems()
 
+    FilterDialog(
+        isShown = uiState.isShowFilter,
+        searchAnimalRequest = uiState.request,
+        onDismiss = { viewModel.onEvent(FeedEvent.SetShowFilter(false)) })
+
     FeedContent(
         pagingItems = pagingItems,
         uiState = uiState,
+        showFilterDialog = { viewModel.onEvent(FeedEvent.SetShowFilter(true)) },
         onClickContent = {
             viewModel.onEvent(FeedEvent.UpdateSelectInfo(data = it))
             navController.navigate(Screens.Detail.route) {
@@ -79,7 +85,9 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
 @Composable
 private fun FeedContent(
     pagingItems: LazyPagingItems<AnimalInfo>?,
-    uiState: FeedUiState, onClickContent: (AnimalInfo) -> Unit
+    uiState: FeedUiState,
+    onClickContent: (AnimalInfo) -> Unit,
+    showFilterDialog: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -123,7 +131,7 @@ private fun FeedContent(
                     modifier = Modifier
                         .size(42.dp)
                         .clip(shape = CircleShape)
-                        .clickable { }
+                        .clickable { showFilterDialog() }
                         .padding(8.dp),
                     painter = painterResource(id = R.drawable.ic_filter),
                     contentDescription = "",
@@ -136,7 +144,10 @@ private fun FeedContent(
         Box {
             val scrollState = rememberLazyListState()
             LazyColumn(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 4.dp),
                 state = scrollState,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -286,7 +297,12 @@ private fun AnimalComponent(
 @Composable
 private fun ContentPreview() {
     WithconimalTheme {
-        FeedContent(uiState = FeedUiState(), pagingItems = null) {}
+        FeedContent(
+            uiState = FeedUiState(),
+            showFilterDialog = {},
+            onClickContent = {},
+            pagingItems = null
+        )
     }
 }
 
@@ -294,6 +310,11 @@ private fun ContentPreview() {
 @Composable
 private fun ContentPreviewDark() {
     WithconimalTheme(darkTheme = true) {
-        FeedContent(uiState = FeedUiState(), pagingItems = null) {}
+        FeedContent(
+            uiState = FeedUiState(),
+            showFilterDialog = {},
+            onClickContent = {},
+            pagingItems = null
+        )
     }
 }

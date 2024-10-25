@@ -1,21 +1,17 @@
 package com.nyangzzi.withconimal.presentation.feature.feed
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
-import com.nyangzzi.withconimal.data.network.ResultWrapper
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
 import com.nyangzzi.withconimal.domain.usecase.SearchAnimalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,6 +36,7 @@ class FeedViewModel @Inject constructor(
         when (event) {
             is FeedEvent.UpdateSelectInfo -> updateSelectData(selectData = event.data)
             is FeedEvent.SetShowImageExpand -> setShowImageExpand(isShow = event.isShow)
+            is FeedEvent.SetShowFilter -> setShowFilter(isShow = event.isShow)
         }
     }
 
@@ -52,6 +49,12 @@ class FeedViewModel @Inject constructor(
     private fun setShowImageExpand(isShow: Boolean) {
         _uiState.update {
             it.copy(isShowImageExpand = isShow)
+        }
+    }
+
+    private fun setShowFilter(isShow: Boolean) {
+        _uiState.update {
+            it.copy(isShowFilter = isShow)
         }
     }
 

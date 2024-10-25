@@ -54,6 +54,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.nyangzzi.withconimal.R
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
+import com.nyangzzi.withconimal.domain.model.common.NeuterType
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedEvent
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedViewModel
 import com.nyangzzi.withconimal.presentation.util.Utils
@@ -64,7 +65,6 @@ import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
 fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
 
     uiState.selectData?.let {
         ImageExpandDialog(
@@ -283,14 +283,14 @@ private fun AnimalImage(
             modifier = Modifier
                 .padding(28.dp)
                 .align(Alignment.BottomEnd),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
 
             val iconModifier = Modifier
-                .size(38.dp)
+                .size(46.dp)
                 .clip(shape = CircleShape)
                 .clickable { }
-                .padding(4.dp)
+                .padding(8.dp)
 
             Icon(
                 modifier = iconModifier,
@@ -352,15 +352,15 @@ private fun DetailInfo(
             }
         ),
         FeatureData(
-            icon = when (neuterYn) {
-                "Y" -> R.drawable.ic_neuter_yes
-                "N" -> R.drawable.ic_neuter_no
+            icon = when (NeuterType.entries.firstOrNull { it.code == neuterYn }) {
+                NeuterType.YES -> R.drawable.ic_neuter_yes
+                NeuterType.NO -> R.drawable.ic_neuter_no
                 else -> R.drawable.ic_neuter_dont
             },
             title = "중성화",
-            text = when (neuterYn) {
-                "Y" -> "완료"
-                "N" -> "미완료"
+            text = when (NeuterType.entries.firstOrNull { it.code == neuterYn }) {
+                NeuterType.YES -> "완료"
+                NeuterType.NO -> "미완료"
                 else -> "확인불가"
             }
         )
