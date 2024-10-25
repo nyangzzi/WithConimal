@@ -113,7 +113,7 @@ private fun FilterContent(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.surface)
-            .padding(16.dp)
+            .padding(vertical = 16.dp, horizontal = 4.dp)
     ) {
 
         Box(
@@ -147,6 +147,7 @@ private fun FilterContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(18.dp)
                 .weight(1f)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -158,7 +159,7 @@ private fun FilterContent(
             ) {
                 Text(
                     text = "${selectCnt}개 선택",
-                    modifier = Modifier.padding(start = 12.dp).weight(1f),
+                    modifier = Modifier.padding(start = 18.dp).weight(1f),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface

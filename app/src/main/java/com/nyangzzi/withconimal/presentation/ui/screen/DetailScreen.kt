@@ -1,6 +1,7 @@
 package com.nyangzzi.withconimal.presentation.ui.screen
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -8,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -175,8 +178,7 @@ fun DetailContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .verticalScroll(scrollState)
         ) {
 
             DetailInfo(
@@ -483,84 +485,32 @@ private fun CareRoomInfo(
     chargeNm: String?,
     officetel: String?
 ) {
-
-    var isShown by remember {
-        mutableStateOf(true)
-    }
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    InfoParent(
+        icon = R.drawable.ic_heart_lock,
+        title = "저의 사랑이 되어주세요!",
     ) {
+        Text(
+            text = "[보호소]",
+            fontSize = 20.sp,
+            fontWeight = FontWeight(700),
+            color = MaterialTheme.colorScheme.onSurface
+        )
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .noRippleClickable { isShown = !isShown }
-                .padding(horizontal = 16.dp),
-        ) {
+        TextContent(title = "이름", text = careNm)
+        TextContent(title = "전화번호", text = careTel)
+        TextContent(title = "보호 장소", text = careAddr)
+        TextContent(title = "관할 기관", text = orgNm)
 
-            Icon(
-                modifier = Modifier.size(16.dp),
-                painter = painterResource(id = R.drawable.ic_heart_lock),
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.secondary
-            )
+        Text(
+            modifier = Modifier.padding(top = 12.dp),
+            text = "[담당자]",
+            fontSize = 20.sp,
+            fontWeight = FontWeight(700),
+            color = MaterialTheme.colorScheme.onSurface
+        )
 
-            Text(
-                modifier = Modifier.weight(1f),
-                text = "저의 사랑이 되어주세요!",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(id = if (isShown) R.drawable.ic_up_line else R.drawable.ic_down_line),
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-
-        }
-
-        if (isShown) {
-
-            Column(
-                modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.inverseOnSurface
-                )
-
-                Text(
-                    text = "[보호소]",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight(700),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                TextContent(title = "이름", text = careNm)
-                TextContent(title = "전화번호", text = careTel)
-                TextContent(title = "보호 장소", text = careAddr)
-                TextContent(title = "관할 기관", text = orgNm)
-
-                Text(
-                    modifier = Modifier.padding(top = 12.dp),
-                    text = "[담당자]",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight(700),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                TextContent(title = "이름", text = chargeNm)
-                TextContent(title = "연락처", text = officetel)
-            }
-
-
-        }
-
+        TextContent(title = "이름", text = chargeNm)
+        TextContent(title = "연락처", text = officetel)
     }
 }
 
@@ -572,65 +522,18 @@ private fun NoticeInfo(
     processState: String?
 ) {
 
-    var isShown by remember {
-        mutableStateOf(true)
-    }
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    InfoParent(
+        icon = R.drawable.ic_heart_hand,
+        title = "운명적 만남을 기다리고 있어요",
     ) {
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .noRippleClickable { isShown = !isShown }
-                .padding(horizontal = 16.dp),
-        ) {
-
-            Icon(
-                modifier = Modifier.size(16.dp),
-                painter = painterResource(id = R.drawable.ic_heart_hand),
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.secondary
-            )
-
-            Text(
-                modifier = Modifier.weight(1f),
-                text = "운명적 만남을 기다리고 있어요",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(id = if (isShown) R.drawable.ic_up_line else R.drawable.ic_down_line),
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-
-        }
-
-        if (isShown) {
-
-            Column(
-                modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.inverseOnSurface
-                )
-                TextContent(title = "공고 번호", text = noticeNo)
-                TextContent(
-                    title = "공고일",
-                    text = "${Utils.dateFormat(noticeSdt)} ~ ${Utils.dateFormat(noticeEdt)}"
-                )
-                TextContent(title = "공고 상태", text = processState)
-            }
-
-        }
-
+        TextContent(title = "공고 번호", text = noticeNo)
+        TextContent(
+            title = "공고일",
+            text = "${Utils.dateFormat(noticeSdt)} ~ ${Utils.dateFormat(noticeEdt)}"
+        )
+        TextContent(title = "공고 상태", text = processState)
     }
+
 }
 
 @Composable
@@ -639,32 +542,47 @@ private fun AdoptionInfo(
     happenDt: String?,
     happenPlace: String?
 ) {
+    InfoParent(
+        icon = R.drawable.ic_heart_broken,
+        title = "혹시 저를 찾고 있나요?",
+    ) {
+        TextContent(title = "유기 번호", text = desertionNo)
+        TextContent(title = "접수일", text = Utils.dateFormat(happenDt))
+        TextContent(title = "발견 장소", text = happenPlace)
+    }
+}
+
+@Composable
+private inline fun InfoParent(
+    @DrawableRes icon: Int,
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
 
     var isShown by remember {
         mutableStateOf(true)
     }
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-
+    Column {
         Row(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .noRippleClickable { isShown = !isShown }
-                .padding(horizontal = 16.dp),
+                .noRippleClickable {
+                    isShown = !isShown
+                }
+                .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
 
             Icon(
                 modifier = Modifier.size(16.dp),
-                painter = painterResource(id = R.drawable.ic_heart_broken),
+                painter = painterResource(id = icon),
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.secondary
             )
 
             Text(
                 modifier = Modifier.weight(1f),
-                text = "혹시 저를 찾고 있나요?",
+                text = title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -679,17 +597,23 @@ private fun AdoptionInfo(
 
         }
 
-        if (isShown) {
+        Column(
+            modifier = Modifier
+                .animateContentSize()
+                .heightIn(min = 0.dp)
+                .let {
+                    if (isShown) it else it.height(0.dp)
+                },
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.inverseOnSurface
+            )
             Column(
-                modifier = Modifier.padding(vertical = 6.dp, horizontal = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 32.dp)
             ) {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.inverseOnSurface
-                )
-                TextContent(title = "유기 번호", text = desertionNo)
-                TextContent(title = "접수일", text = Utils.dateFormat(happenDt))
-                TextContent(title = "발견 장소", text = happenPlace)
+                content()
             }
         }
 
