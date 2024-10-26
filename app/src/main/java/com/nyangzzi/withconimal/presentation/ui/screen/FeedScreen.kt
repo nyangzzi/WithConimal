@@ -48,6 +48,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedEvent
@@ -163,6 +164,8 @@ private fun FeedContent(
                     items(pagingItems.itemCount) { item ->
                         Box(
                             modifier = Modifier
+                                .padding(bottom = if (item == uiState.totalCnt) 12.dp else 0.dp)
+                                .clip(shape = RoundedCornerShape(16.dp))
                                 .clickable {
                                     pagingItems[item]?.let { onClickContent(it) }
                                 }
@@ -250,10 +253,10 @@ private fun AnimalComponent(
             .wrapContentHeight()
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(16.dp))
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -293,8 +296,9 @@ private fun AnimalComponent(
         ) {
             Text(
                 text = kindCd,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 modifier = Modifier.weight(1f),
+                overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
