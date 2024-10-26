@@ -31,6 +31,10 @@ pagingCompose = "1.0.0-alpha19"
 pagingCommonAndroid = "3.3.2"
 pagingRuntime = "3.2.0"
 
+#room
+room = "2.5.0"
+ksp = "1.9.0-1.0.13"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -69,6 +73,10 @@ paging-compose = {group = "androidx.paging", name = "paging-compose", version.re
 androidx-paging-common-android = { group = "androidx.paging", name = "paging-common-android", version.ref = "pagingCommonAndroid" }
 paging-runtime = {group = "androidx.paging", name = "paging-runtime", version.ref = "pagingRuntime"}
 
+#room
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
@@ -77,4 +85,6 @@ kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 
 #hilt
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
