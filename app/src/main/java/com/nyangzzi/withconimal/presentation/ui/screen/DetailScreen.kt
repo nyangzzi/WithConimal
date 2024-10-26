@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +69,14 @@ import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
 fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val favoriteAnimal by viewModel.favoriteAnimal.collectAsStateWithLifecycle()
+    var isFavorite by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = favoriteAnimal) {
+        isFavorite = favoriteAnimal.any { it.desertionNo == uiState.selectData?.desertionNo }
+    }
 
     uiState.selectData?.let {
         ImageExpandDialog(
@@ -76,7 +85,12 @@ fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
             onDismiss = { viewModel.onEvent(FeedEvent.SetShowImageExpand(false)) })
 
         DetailContent(info = it,
+            isFavorite = isFavorite,
             onClickImage = { viewModel.onEvent(FeedEvent.SetShowImageExpand(true)) },
+            onClickFavorite = {
+                if (isFavorite) viewModel.onEvent(FeedEvent.DeleteFavoriteAnimal(it))
+                else viewModel.onEvent(FeedEvent.AddFavoriteAnimal(it))
+            },
             onClickBack = {
                 viewModel.onEvent(FeedEvent.UpdateSelectInfo(data = null))
                 navController.popBackStack()
@@ -87,7 +101,9 @@ fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
 @Composable
 fun DetailContent(
     info: AnimalInfo,
+    isFavorite: Boolean,
     onClickImage: () -> Unit = {},
+    onClickFavorite: () -> Unit = {},
     onClickBack: () -> Unit = {}
 ) {
 
@@ -147,10 +163,11 @@ fun DetailContent(
             Icon(
                 modifier = Modifier
                     .size(56.dp)
-                    .noRippleClickable { /*todo*/ }
+                    .clip(CircleShape)
+                    .clickable { onClickFavorite() }
                     .padding(12.dp)
                     .alpha(animatedAlpha),
-                painter = painterResource(id = R.drawable.ic_heart_line),
+                painter = painterResource(id = if (isFavorite) R.drawable.ic_heart_fill else R.drawable.ic_heart_line),
                 contentDescription = ""
             )
 
@@ -169,8 +186,10 @@ fun DetailContent(
                 .height(animatedBoxHeight)
         ) {
             AnimalImage(
+                isFavorite = isFavorite,
                 processState = info.processState,
                 onClickImage = onClickImage,
+                onClickFavorite = onClickFavorite,
                 imageUrl = info.popfile
             )
         }
@@ -234,6 +253,8 @@ private fun MarginContent() {
 
 @Composable
 private fun AnimalImage(
+    isFavorite: Boolean,
+    onClickFavorite: () -> Unit,
     processState: String?,
     onClickImage: () -> Unit,
     imageUrl: String?
@@ -291,18 +312,20 @@ private fun AnimalImage(
             val iconModifier = Modifier
                 .size(46.dp)
                 .clip(shape = CircleShape)
-                .clickable { }
-                .padding(8.dp)
 
             Icon(
-                modifier = iconModifier,
-                painter = painterResource(id = R.drawable.ic_heart_line),
+                modifier = iconModifier
+                    .clickable { onClickFavorite() }
+                    .padding(8.dp),
+                painter = painterResource(id = if (isFavorite) R.drawable.ic_heart_fill else R.drawable.ic_heart_line),
                 contentDescription = "",
                 tint = Color.White
             )
 
             Icon(
-                modifier = iconModifier,
+                modifier = iconModifier
+                    .clickable { }
+                    .padding(8.dp),
                 painter = painterResource(id = R.drawable.ic_sharing),
                 contentDescription = "",
                 tint = Color.White
@@ -611,7 +634,8 @@ private inline fun InfoParent(
             )
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(vertical = 12.dp, horizontal = 32.dp)
+                modifier = Modifier
+                    .padding(vertical = 12.dp, horizontal = 32.dp)
                     .padding(bottom = 6.dp)
             ) {
                 content()
@@ -649,6 +673,7 @@ private fun TextContent(title: String, text: String?) {
 private fun Preview() {
     WithconimalTheme {
         DetailContent(
+            isFavorite = false,
             info = AnimalInfo(
                 desertionNo = "448548202400918",
                 filename = "http://www.animal.go.kr/files/shelter/2024/09/202410231110474_s.jpg",
@@ -682,6 +707,7 @@ private fun Preview() {
 private fun PreviewDark() {
     WithconimalTheme(darkTheme = true) {
         DetailContent(
+            isFavorite = true,
             info = AnimalInfo(
                 desertionNo = "448548202400918",
                 filename = "http://www.animal.go.kr/files/shelter/2024/09/202410231110474_s.jpg",

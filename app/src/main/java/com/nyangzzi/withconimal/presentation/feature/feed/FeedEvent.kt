@@ -6,4 +6,6 @@ sealed class FeedEvent {
     data class UpdateSelectInfo(val data: AnimalInfo?) : FeedEvent()
     data class SetShowImageExpand(val isShow: Boolean) : FeedEvent()
     data class SetShowFilter(val isShow: Boolean) : FeedEvent()
+    data class AddFavoriteAnimal(val animalInfo: AnimalInfo): FeedEvent()
+    data class DeleteFavoriteAnimal(val animalInfo: AnimalInfo): FeedEvent()
 }

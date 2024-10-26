@@ -62,6 +62,7 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val pagingItems = viewModel.animalPagingFlow.collectAsLazyPagingItems()
+    val favoriteAnimal by viewModel.favoriteAnimal.collectAsStateWithLifecycle()
 
     FilterDialog(
         isShown = uiState.isShowFilter,
@@ -69,6 +70,7 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
         onDismiss = { viewModel.onEvent(FeedEvent.SetShowFilter(false)) })
 
     FeedContent(
+        favoriteAnimal = favoriteAnimal,
         pagingItems = pagingItems,
         uiState = uiState,
         showFilterDialog = { viewModel.onEvent(FeedEvent.SetShowFilter(true)) },
@@ -78,16 +80,20 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
                 launchSingleTop = true
                 restoreState = true
             }
-        })
+        },
+        onEvent = viewModel::onEvent
+    )
 
 }
 
 @Composable
 private fun FeedContent(
+    favoriteAnimal: List<AnimalInfo>,
     pagingItems: LazyPagingItems<AnimalInfo>?,
     uiState: FeedUiState,
     onClickContent: (AnimalInfo) -> Unit,
     showFilterDialog: () -> Unit,
+    onEvent: (FeedEvent) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -154,17 +160,32 @@ private fun FeedContent(
             ) {
 
                 pagingItems?.let {
-                    items(pagingItems.itemCount) {
+                    items(pagingItems.itemCount) { item ->
                         Box(
                             modifier = Modifier
                                 .clickable {
-                                    pagingItems[it]?.let { it1 -> onClickContent(it1) }
+                                    pagingItems[item]?.let { onClickContent(it) }
                                 }
                         ) {
+                            val isFavorite =
+                                favoriteAnimal.any { it.desertionNo == pagingItems[item]?.desertionNo }
                             AnimalComponent(
-                                imageUrl = pagingItems[it]?.popfile ?: "",
-                                processState = pagingItems[it]?.processState,
-                                kindCd = pagingItems[it]?.kindCd ?: ""
+                                isFavorite = isFavorite,
+                                imageUrl = pagingItems[item]?.popfile ?: "",
+                                processState = pagingItems[item]?.processState,
+                                kindCd = pagingItems[item]?.kindCd ?: "",
+                                onClickFavorite = {
+                                    if (isFavorite) onEvent(
+                                        FeedEvent.DeleteFavoriteAnimal(
+                                            pagingItems[item] ?: AnimalInfo()
+                                        )
+                                    )
+                                    else onEvent(
+                                        FeedEvent.AddFavoriteAnimal(
+                                            pagingItems[item] ?: AnimalInfo()
+                                        )
+                                    )
+                                }
                             )
                         }
                     }
@@ -217,9 +238,11 @@ private fun FeedContent(
 
 @Composable
 private fun AnimalComponent(
+    isFavorite: Boolean,
     imageUrl: String?,
     processState: String?,
-    kindCd: String
+    kindCd: String,
+    onClickFavorite: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -276,7 +299,11 @@ private fun AnimalComponent(
             )
 
             Icon(
-                painter = painterResource(id = R.drawable.ic_heart_line),
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .clickable { onClickFavorite() },
+                painter = painterResource(id = if (isFavorite) R.drawable.ic_heart_fill else R.drawable.ic_heart_line),
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.error
             )
@@ -298,10 +325,12 @@ private fun AnimalComponent(
 private fun ContentPreview() {
     WithconimalTheme {
         FeedContent(
+            favoriteAnimal = emptyList(),
             uiState = FeedUiState(),
             showFilterDialog = {},
             onClickContent = {},
-            pagingItems = null
+            pagingItems = null,
+            onEvent = {}
         )
     }
 }
@@ -311,10 +340,12 @@ private fun ContentPreview() {
 private fun ContentPreviewDark() {
     WithconimalTheme(darkTheme = true) {
         FeedContent(
+            favoriteAnimal = emptyList(),
             uiState = FeedUiState(),
             showFilterDialog = {},
             onClickContent = {},
-            pagingItems = null
+            pagingItems = null,
+            onEvent = {}
         )
     }
 }

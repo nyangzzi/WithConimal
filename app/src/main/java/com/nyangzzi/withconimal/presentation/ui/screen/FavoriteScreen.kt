@@ -35,8 +35,9 @@ fun FavoriteScreen(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val favoriteAnimal by viewModel.favoriteAnimal.collectAsStateWithLifecycle()
 
-    if (uiState.favoriteAnimals.isEmpty()) {
+    if (favoriteAnimal.isEmpty()) {
         FavoriteEmptyList()
     } else {
         FavoriteContent()
