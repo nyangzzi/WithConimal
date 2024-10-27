@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,21 +40,17 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.nyangzzi.withconimal.R
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.TextUnit
+import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedEvent
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedUiState
@@ -60,7 +58,8 @@ import com.nyangzzi.withconimal.presentation.feature.feed.FeedViewModel
 import com.nyangzzi.withconimal.presentation.navigation.Screens
 import com.nyangzzi.withconimal.presentation.util.Utils
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
-import kotlinx.coroutines.launch
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 
 @Composable
 fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
@@ -111,18 +110,21 @@ private fun FeedContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        if (uiState.totalCnt > 0) {
-            Row(
-                verticalAlignment = Alignment.Bottom,
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .padding(horizontal = 16.dp)
+        ) {
+            Column(
                 modifier = Modifier
-                    .padding(top = 32.dp)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp)
-                ) {
+                    .height(72.dp)
+                    .weight(1f)
+                    .padding(start = 8.dp, bottom = 4.dp),
+                verticalArrangement = Arrangement.Bottom
+            )
+            {
+                if (uiState.totalCnt > 0) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
                             text = Utils.formatComma(uiState.totalCnt),
@@ -143,51 +145,81 @@ private fun FeedContent(
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                }
-
-                Box(modifier = Modifier.size(width = 52.dp, height = 48.dp)) {
-                    Icon(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .size(42.dp)
-                            .clip(shape = CircleShape)
-                            .clickable { showFilterDialog() }
-                            .padding(8.dp),
-                        painter = painterResource(id = R.drawable.ic_filter),
-                        contentDescription = "",
-                        tint = if (selectCnt == 0) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.secondary
-                    )
-                    if (selectCnt > 0) {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .align(Alignment.TopEnd)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = selectCnt.toString(),
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
-                            )
-                        }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_kind_dog),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_kind_cat),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_kind_etc),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_paw_fill),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
+                    Text(
+                        text = "귀여운 동물들을 만나보세요!",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
 
+            Box(modifier = Modifier.size(width = 52.dp, height = 48.dp)) {
+                Icon(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .size(42.dp)
+                        .clip(shape = CircleShape)
+                        .clickable { showFilterDialog() }
+                        .padding(8.dp),
+                    painter = painterResource(id = R.drawable.ic_filter),
+                    contentDescription = "",
+                    tint = if (selectCnt == 0) MaterialTheme.colorScheme.onSurfaceVariant
+                    else MaterialTheme.colorScheme.secondary
+                )
+                if (selectCnt > 0) {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.TopEnd)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = selectCnt.toString(),
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
 
             }
+
         }
+
 
         Box {
             val scrollState = rememberLazyListState()
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(horizontal = 16.dp)
                     .padding(top = 4.dp),
                 state = scrollState,
@@ -231,20 +263,31 @@ private fun FeedContent(
 
                 when {
                     pagingItems?.loadState?.refresh is LoadState.Loading -> {
-                        item { CircularProgressIndicator(color = Color.Red) }
+                        item { AnimalComponentSkeleton() }
                     }
 
                     pagingItems?.loadState?.append is LoadState.Loading -> {
-                        item { CircularProgressIndicator(color = Color.Green) }
+                        item {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
 
                     pagingItems?.loadState?.refresh is LoadState.Error -> {
                         item {
-                            Text(text = "Error loading animals")
+                            FeedEmptyList(errorText = "조회에 실패했어요", detailText = "다시 시도해 주세요")
                         }
                     }
                 }
-
+            }
+            when {
+                pagingItems?.loadState?.refresh is LoadState.NotLoading -> {
+                    if (pagingItems.itemCount == 0) {
+                        FeedEmptyList(errorText = "조회된 공고가 없어요", detailText = "조건을 다시 설정해 보세요")
+                    }
+                }
             }
 
             var isTop by remember { mutableStateOf(false) }
@@ -271,6 +314,40 @@ private fun FeedContent(
             }
 
         }
+    }
+}
+
+@Composable
+private fun FeedEmptyList(errorText: String, detailText: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surface),
+        verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_fail_square),
+            modifier = Modifier.size(56.dp),
+            contentDescription = "",
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = errorText,
+                fontWeight = FontWeight.Medium,
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = detailText,
+                fontWeight = FontWeight.Medium,
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
     }
 }
 
@@ -358,6 +435,46 @@ private fun AnimalComponent(
 
         }
 
+
+    }
+}
+
+@Composable
+private fun AnimalComponentSkeleton(
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
+        val modifier = Modifier
+            .placeholder(
+                visible = true,
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                shape = RoundedCornerShape(8.dp),
+                highlight = PlaceholderHighlight.shimmer()
+            )
+
+        Box(modifier = modifier.fillMaxWidth().height(200.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(modifier = modifier.size(width = 122.dp, height = 26.dp))
+            Spacer(modifier = Modifier.weight(1f))
+            Box(modifier = modifier.size(26.dp))
+            Box(modifier = modifier.size(26.dp))
+        }
 
     }
 }
