@@ -72,6 +72,7 @@ fun FilterDialog(
     isShown: Boolean,
     searchAnimalRequest: SearchAnimalRequest,
     onConfirm: (SearchAnimalRequest) -> Unit,
+    selectCnt: Int,
     onDismiss: () -> Unit
 ) {
 
@@ -83,25 +84,9 @@ fun FilterDialog(
         var request by remember {
             mutableStateOf(SearchAnimalRequest())
         }
-        var selectCnt by remember {
-            mutableIntStateOf(0)
-        }
 
         LaunchedEffect(key1 = searchAnimalRequest) {
             request = searchAnimalRequest
-        }
-
-        LaunchedEffect(key1 = request) {
-            selectCnt = listOf(
-                request.neuterYn,
-                request.kind,
-                request.upkind,
-                request.bgnde,
-                request.endde,
-                request.careRegNo,
-                request.state,
-                request.uprCd
-            ).count { it != null }
         }
 
         ModalBottomSheet(

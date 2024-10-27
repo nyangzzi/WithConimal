@@ -44,11 +44,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
@@ -67,10 +69,24 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
     val pagingItems = viewModel.animalPagingFlow.collectAsLazyPagingItems()
     val favoriteAnimal by viewModel.favoriteAnimal.collectAsStateWithLifecycle()
 
+    var selectCnt by remember {
+        mutableIntStateOf(0)
+    }
+
     LaunchedEffect(key1 = uiState.request) {
-       if(pagingItems.loadState.refresh !is LoadState.Loading) {
-           viewModel.onEvent(FeedEvent.GetAnimalList)
-       }
+        if (pagingItems.loadState.refresh !is LoadState.Loading) {
+            viewModel.onEvent(FeedEvent.GetAnimalList)
+        }
+        selectCnt = listOf(
+            uiState.request.neuterYn,
+            uiState.request.kind,
+            uiState.request.upkind,
+            uiState.request.bgnde,
+            uiState.request.endde,
+            uiState.request.careRegNo,
+            uiState.request.state,
+            uiState.request.uprCd
+        ).count { it != null }
     }
 
     FilterDialog(
@@ -79,12 +95,14 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
         onConfirm = {
             viewModel.onEvent(FeedEvent.UpdateRequest(it))
         },
+        selectCnt = selectCnt,
         onDismiss = { viewModel.onEvent(FeedEvent.SetShowFilter(false)) })
 
     FeedContent(
         favoriteAnimal = favoriteAnimal,
         pagingItems = pagingItems,
         uiState = uiState,
+        selectCnt = selectCnt,
         showFilterDialog = { viewModel.onEvent(FeedEvent.SetShowFilter(true)) },
         onClickContent = {
             viewModel.onEvent(FeedEvent.UpdateSelectInfo(data = it))
@@ -102,6 +120,7 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
 private fun FeedContent(
     favoriteAnimal: List<AnimalInfo>,
     pagingItems: LazyPagingItems<AnimalInfo>?,
+    selectCnt: Int,
     uiState: FeedUiState,
     onClickContent: (AnimalInfo) -> Unit,
     showFilterDialog: () -> Unit,
@@ -145,16 +164,40 @@ private fun FeedContent(
                     )
                 }
 
-                Icon(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(shape = CircleShape)
-                        .clickable { showFilterDialog() }
-                        .padding(8.dp),
-                    painter = painterResource(id = R.drawable.ic_filter),
-                    contentDescription = "",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Box(modifier = Modifier.size(width = 52.dp, height = 48.dp)) {
+                    Icon(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .size(42.dp)
+                            .clip(shape = CircleShape)
+                            .clickable { showFilterDialog() }
+                            .padding(8.dp),
+                        painter = painterResource(id = R.drawable.ic_filter),
+                        contentDescription = "",
+                        tint = if (selectCnt == 0) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.secondary
+                    )
+                    if (selectCnt > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .align(Alignment.TopEnd)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = selectCnt.toString(),
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+
+                }
 
             }
         }
@@ -348,6 +391,7 @@ private fun ContentPreview() {
             showFilterDialog = {},
             onClickContent = {},
             pagingItems = null,
+            selectCnt = 0,
             onEvent = {}
         )
     }
@@ -363,6 +407,7 @@ private fun ContentPreviewDark() {
             showFilterDialog = {},
             onClickContent = {},
             pagingItems = null,
+            selectCnt = 1,
             onEvent = {}
         )
     }
