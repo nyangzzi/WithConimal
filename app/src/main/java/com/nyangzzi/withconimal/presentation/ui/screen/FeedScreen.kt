@@ -199,7 +199,7 @@ private fun FeedContent(
                     items(pagingItems.itemCount) { item ->
                         Box(
                             modifier = Modifier
-                                .padding(bottom = if (item == uiState.totalCnt) 12.dp else 0.dp)
+                                .padding(bottom = if (item == uiState.totalCnt - 1) 12.dp else 0.dp)
                                 .clip(shape = RoundedCornerShape(16.dp))
                                 .clickable {
                                     pagingItems[item]?.let { onClickContent(it) }

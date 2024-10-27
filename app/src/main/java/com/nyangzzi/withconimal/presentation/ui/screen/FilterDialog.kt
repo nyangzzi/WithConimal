@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.nyangzzi.withconimal.R
+import com.nyangzzi.withconimal.domain.model.common.KindType
 import com.nyangzzi.withconimal.domain.model.common.NeuterType
 import com.nyangzzi.withconimal.domain.model.common.NotificationStateType
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
@@ -168,7 +169,10 @@ private fun FilterContent(
                 RefreshBtn(onClear = onClear)
             }
 
-            FilterKind()
+            FilterKind(
+                kind = request.upkind,
+                setKind = { setRequest(request.copy(upkind = it)) }
+            )
             FilterNeuter(
                 neuter = request.neuterYn,
                 setNeuter = { setRequest(request.copy(neuterYn = it)) }
@@ -282,10 +286,31 @@ private inline fun FilterParent(
 }
 
 @Composable
-private fun FilterKind() {
+private fun FilterKind(
+    kind: String?,
+    setKind: (String?) -> Unit
+) {
     FilterParent(icon = R.drawable.ic_paw_fill, title = "종류") {
 
+        var isExpanded by remember {
+            mutableStateOf(false)
+        }
 
+        DropDown(
+            text = "${KindType.entries.firstOrNull { it.code == kind }?.text}",
+            isExpanded = isExpanded,
+            onClick = {
+                isExpanded = !isExpanded
+            }
+        ) {
+            KindType.entries.map {
+                DropDownItem(
+                    onItemClick = { setKind(it.code) },
+                    onDismiss = { isExpanded = false },
+                    text = it.text
+                )
+            }
+        }
     }
 }
 
