@@ -33,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -247,12 +248,27 @@ private fun AnimalComponent(
         }
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            Icon(
+                modifier = Modifier.size(22.dp),
+                painter = painterResource(
+                    id = if (kindCd.contains("[개]") || kindCd.contains("[강아지]")) R.drawable.ic_kind_dog
+                    else if (kindCd.contains("[고양이]")) R.drawable.ic_kind_cat
+                    else R.drawable.ic_paw_fill,
+                ),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.outline
+            )
             Text(
-                text = kindCd,
-                fontSize = 18.sp,
+                text = kindCd.replace("[개] ", "")
+                    .replace("[고양이] ", "")
+                    .replace("[기타축종] ", ""),
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
                 color = MaterialTheme.colorScheme.onBackground
             )
