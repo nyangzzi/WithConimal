@@ -173,17 +173,17 @@ private fun FilterContent(
                 kind = request.upkind,
                 setKind = { setRequest(request.copy(upkind = it)) }
             )
-            FilterNeuter(
-                neuter = request.neuterYn,
-                setNeuter = { setRequest(request.copy(neuterYn = it)) }
-            )
+            FilterArea()
+            FilterCare()
+            FilterDate()
             FilterState(
                 state = request.state,
                 setState = { setRequest(request.copy(state = it)) }
             )
-            FilterDate()
-            FilterArea()
-            FilterCare()
+            FilterNeuter(
+                neuter = request.neuterYn,
+                setNeuter = { setRequest(request.copy(neuterYn = it)) }
+            )
         }
 
         BottomBtn(onConfirm = onConfirm, onDismiss = onDismiss)

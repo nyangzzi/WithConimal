@@ -1,5 +1,7 @@
 package com.nyangzzi.withconimal.presentation.ui.screen
 
+import android.content.Intent
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
@@ -47,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -520,7 +523,7 @@ private fun CareRoomInfo(
         )
 
         TextContent(title = "이름", text = careNm)
-        TextContent(title = "전화번호", text = careTel)
+        TextContent(title = "전화번호", text = careTel, isTel = true)
         TextContent(title = "보호 장소", text = careAddr)
         TextContent(title = "관할 기관", text = orgNm)
 
@@ -533,7 +536,7 @@ private fun CareRoomInfo(
         )
 
         TextContent(title = "이름", text = chargeNm)
-        TextContent(title = "연락처", text = officetel)
+        TextContent(title = "연락처", text = officetel, isTel = true)
     }
 }
 
@@ -646,7 +649,7 @@ private inline fun InfoParent(
 }
 
 @Composable
-private fun TextContent(title: String, text: String?) {
+private fun TextContent(title: String, text: String?, isTel: Boolean = false) {
     text?.let {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -657,13 +660,35 @@ private fun TextContent(title: String, text: String?) {
                 fontWeight = FontWeight(600),
                 color = MaterialTheme.colorScheme.secondary
             )
-            Text(
-                modifier = Modifier.padding(top = 2.dp),
-                text = text,
-                fontSize = 16.sp,
-                fontWeight = FontWeight(400),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            val context = LocalContext.current
+
+            Row(modifier = Modifier
+                .noRippleClickable {
+                    if (isTel) {
+                        val intent = Intent(Intent.ACTION_DIAL).apply {
+                            data = Uri.parse("tel:$text")
+                        }
+                        context.startActivity(intent)
+                    }
+                },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                if (isTel) {
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        painter = painterResource(id = R.drawable.ic_call),
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.primary)
+                }
+                Text(
+                    modifier = Modifier.padding(top = 1.dp),
+                    text = text,
+                    textDecoration = if (isTel) TextDecoration.Underline else null,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(400),
+                    color = if (isTel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

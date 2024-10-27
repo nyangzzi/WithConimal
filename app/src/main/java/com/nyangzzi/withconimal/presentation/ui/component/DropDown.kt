@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,13 +40,20 @@ fun DropDown(
     onClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    DropDownButton(text = text, isExpanded = isExpanded,
-        onClick = onClick )
+    Column {
+        DropDownButton(
+            text = text, isExpanded = isExpanded,
+            onClick = onClick
+        )
 
-    DropdownMenu(
-        expanded = isExpanded,
-        onDismissRequest = onClick) {
-        content()
+        Spacer(modifier = Modifier.height(6.dp))
+
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = onClick
+        ) {
+            content()
+        }
     }
 }
 
@@ -56,7 +65,6 @@ inline fun DropDownItem(
 ) {
     DropdownMenuItem(
         modifier = Modifier
-            .width(300.dp)
             .padding(horizontal = 16.dp),
         text = {
             Text(
