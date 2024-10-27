@@ -2,6 +2,7 @@ package com.nyangzzi.withconimal.presentation.ui.screen
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
@@ -45,8 +46,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -524,7 +527,7 @@ private fun CareRoomInfo(
 
         TextContent(title = "이름", text = careNm)
         TextContent(title = "전화번호", text = careTel, isTel = true)
-        TextContent(title = "보호 장소", text = careAddr)
+        TextContent(title = "보호 장소", text = careAddr, isCopy = true)
         TextContent(title = "관할 기관", text = orgNm)
 
         Text(
@@ -649,7 +652,12 @@ private inline fun InfoParent(
 }
 
 @Composable
-private fun TextContent(title: String, text: String?, isTel: Boolean = false) {
+private fun TextContent(
+    title: String,
+    text: String?,
+    isTel: Boolean = false,
+    isCopy: Boolean = false
+) {
     text?.let {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -661,33 +669,69 @@ private fun TextContent(title: String, text: String?, isTel: Boolean = false) {
                 color = MaterialTheme.colorScheme.secondary
             )
             val context = LocalContext.current
+            val clipboardManager = LocalClipboardManager.current
 
-            Row(modifier = Modifier
-                .noRippleClickable {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .noRippleClickable {
+                            if (isTel) {
+                                val intent = Intent(Intent.ACTION_DIAL).apply {
+                                    data = Uri.parse("tel:$text")
+                                }
+                                context.startActivity(intent)
+                            }
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
                     if (isTel) {
-                        val intent = Intent(Intent.ACTION_DIAL).apply {
-                            data = Uri.parse("tel:$text")
-                        }
-                        context.startActivity(intent)
+                        Icon(
+                            modifier = Modifier.size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_call),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
-                },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                if (isTel) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(id = R.drawable.ic_call),
-                        contentDescription = "",
-                        tint = MaterialTheme.colorScheme.primary)
+                    Text(
+                        modifier = Modifier.padding(top = 1.dp),
+                        text = text,
+                        textDecoration = if (isTel) TextDecoration.Underline else null,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight(400),
+                        color = if (isTel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-                Text(
-                    modifier = Modifier.padding(top = 1.dp),
-                    text = text,
-                    textDecoration = if (isTel) TextDecoration.Underline else null,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight(400),
-                    color = if (isTel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (isCopy) {
+                    Row(
+                        modifier = Modifier
+                            .noRippleClickable {
+                                clipboardManager.setText(AnnotatedString(text))
+                                Toast
+                                    .makeText(context, "주소가 복사 되었습니다", Toast.LENGTH_SHORT)
+                                    .show()
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(16.dp),
+                            painter = painterResource(id = R.drawable.ic_copy),
+                            contentDescription = "",
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Text(
+                            modifier = Modifier.padding(top = 1.dp),
+                            text = "주소 복사",
+                            textDecoration = TextDecoration.Underline,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight(400),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
             }
         }
     }
