@@ -34,10 +34,12 @@ class FeedViewModel @Inject constructor(
     private val _favoriteAnimal = MutableStateFlow<List<AnimalInfo>>(emptyList())
     val favoriteAnimal: StateFlow<List<AnimalInfo>> = _favoriteAnimal
 
-    val animalPagingFlow = Pager(PagingConfig(pageSize = 20)) {
+    var animalPagingFlow = getAnimalPager()
+
+    private fun getAnimalPager() = Pager(PagingConfig(pageSize = 20)) {
         val result = AnimalPagingSource(
             searchAnimalUseCase,
-            initialRequest = SearchAnimalRequest(),
+            initialRequest = uiState.value.request,
             totalCnt = { cnt ->
                 _uiState.update { it.copy(totalCnt = cnt) }
             })
@@ -54,11 +56,19 @@ class FeedViewModel @Inject constructor(
         viewModelScope.launch {
             when (event) {
                 is FeedEvent.UpdateSelectInfo -> updateSelectData(selectData = event.data)
+                is FeedEvent.UpdateRequest -> updateRequest(request = event.request)
                 is FeedEvent.SetShowImageExpand -> setShowImageExpand(isShow = event.isShow)
                 is FeedEvent.SetShowFilter -> setShowFilter(isShow = event.isShow)
                 is FeedEvent.DeleteFavoriteAnimal -> deleteFavoriteAnimal(animalInfo = event.animalInfo)
                 is FeedEvent.AddFavoriteAnimal -> addFavoriteAnimal(animalInfo = event.animalInfo)
+                is FeedEvent.GetAnimalList -> animalPagingFlow = getAnimalPager()
             }
+        }
+    }
+
+    private fun updateRequest(request: SearchAnimalRequest) {
+        _uiState.update {
+            it.copy(request = request, totalCnt = 0)
         }
     }
 

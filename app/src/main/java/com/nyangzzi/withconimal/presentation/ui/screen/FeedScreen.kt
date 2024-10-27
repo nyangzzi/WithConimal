@@ -46,6 +46,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +58,7 @@ import com.nyangzzi.withconimal.presentation.feature.feed.FeedViewModel
 import com.nyangzzi.withconimal.presentation.navigation.Screens
 import com.nyangzzi.withconimal.presentation.util.Utils
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
@@ -65,9 +67,18 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
     val pagingItems = viewModel.animalPagingFlow.collectAsLazyPagingItems()
     val favoriteAnimal by viewModel.favoriteAnimal.collectAsStateWithLifecycle()
 
+    LaunchedEffect(key1 = uiState.request) {
+       if(pagingItems.loadState.refresh !is LoadState.Loading) {
+           viewModel.onEvent(FeedEvent.GetAnimalList)
+       }
+    }
+
     FilterDialog(
         isShown = uiState.isShowFilter,
         searchAnimalRequest = uiState.request,
+        onConfirm = {
+            viewModel.onEvent(FeedEvent.UpdateRequest(it))
+        },
         onDismiss = { viewModel.onEvent(FeedEvent.SetShowFilter(false)) })
 
     FeedContent(
@@ -196,11 +207,11 @@ private fun FeedContent(
 
                 when {
                     pagingItems?.loadState?.refresh is LoadState.Loading -> {
-                        item { CircularProgressIndicator() }
+                        item { CircularProgressIndicator(color = Color.Red) }
                     }
 
                     pagingItems?.loadState?.append is LoadState.Loading -> {
-                        item { CircularProgressIndicator() }
+                        item { CircularProgressIndicator(color = Color.Green) }
                     }
 
                     pagingItems?.loadState?.refresh is LoadState.Error -> {
@@ -256,7 +267,10 @@ private fun AnimalComponent(
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )
-            .background(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(16.dp))
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = RoundedCornerShape(16.dp)
+            )
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

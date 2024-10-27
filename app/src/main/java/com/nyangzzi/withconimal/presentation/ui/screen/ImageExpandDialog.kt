@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -116,7 +117,8 @@ private fun ImageContent(imageUrl: String,onDismiss:() -> Unit) {
 
         Icon(
             modifier = Modifier
-                .padding(top = 16.dp, start = 16.dp)
+                .align(alignment = Alignment.TopEnd)
+                .padding(vertical = 16.dp, horizontal = 16.dp)
                 .size(56.dp)
                 .clip(shape = CircleShape)
                 .clickable { onDismiss() }

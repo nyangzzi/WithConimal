@@ -257,7 +257,7 @@ private fun AnimalComponent(
                 painter = painterResource(
                     id = if (kindCd.contains("[개]") || kindCd.contains("[강아지]")) R.drawable.ic_kind_dog
                     else if (kindCd.contains("[고양이]")) R.drawable.ic_kind_cat
-                    else R.drawable.ic_paw_fill,
+                    else R.drawable.ic_kind_etc,
                 ),
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.outline

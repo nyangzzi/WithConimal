@@ -1,33 +1,46 @@
 package com.nyangzzi.withconimal.presentation.ui.screen
 
 import android.app.Dialog
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,16 +58,25 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.nyangzzi.withconimal.R
 import com.nyangzzi.withconimal.domain.model.common.NeuterType
+import com.nyangzzi.withconimal.domain.model.common.NotificationStateType
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
+import com.nyangzzi.withconimal.presentation.ui.component.DropDown
+import com.nyangzzi.withconimal.presentation.ui.component.DropDownItem
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
+import kotlinx.coroutines.launch
 import java.util.logging.Filter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterDialog(
     isShown: Boolean,
     searchAnimalRequest: SearchAnimalRequest,
+    onConfirm: (SearchAnimalRequest) -> Unit,
     onDismiss: () -> Unit
 ) {
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
     if (isShown) {
 
@@ -62,7 +84,7 @@ fun FilterDialog(
             mutableStateOf(SearchAnimalRequest())
         }
         var selectCnt by remember {
-            mutableStateOf(0)
+            mutableIntStateOf(0)
         }
 
         LaunchedEffect(key1 = searchAnimalRequest) {
@@ -82,21 +104,30 @@ fun FilterDialog(
             ).count { it != null }
         }
 
-
-        Dialog(
+        ModalBottomSheet(
             onDismissRequest = onDismiss,
-            properties = DialogProperties(
-                dismissOnBackPress = true,
-                dismissOnClickOutside = false,
-                usePlatformDefaultWidth = false
-            )
+            sheetState = sheetState,
         ) {
             FilterContent(
                 request = request,
                 selectCnt = selectCnt,
-                onDismiss = onDismiss, onClear = {
+                onDismiss = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            onDismiss()
+                        }
+                    }
+                },
+                onClear = {
                     request = SearchAnimalRequest()
-                })
+                },
+                onConfirm = {
+                    onConfirm(request)
+                },
+                setRequest = {
+                    request = it
+                }
+            )
         }
     }
 
@@ -106,13 +137,14 @@ fun FilterDialog(
 private fun FilterContent(
     request: SearchAnimalRequest,
     selectCnt: Int,
+    onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     onClear: () -> Unit,
+    setRequest: (SearchAnimalRequest) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface)
             .padding(vertical = 16.dp, horizontal = 4.dp)
     ) {
 
@@ -121,16 +153,6 @@ private fun FilterContent(
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Icon(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(shape = CircleShape)
-                    .clickable { onDismiss() }
-                    .padding(12.dp),
-                tint = MaterialTheme.colorScheme.onSurface,
-                painter = painterResource(id = R.drawable.ic_left_line),
-                contentDescription = ""
-            )
 
             Text(
                 modifier = Modifier
@@ -147,46 +169,82 @@ private fun FilterContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp)
+                .padding(8.dp)
                 .weight(1f)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(22.dp)
         ) {
             Row(
                 modifier = Modifier
                     .padding(top = 8.dp, end = 4.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "${selectCnt}개 선택",
-                    modifier = Modifier.padding(start = 18.dp).weight(1f),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Spacer(modifier = Modifier.weight(1f))
                 RefreshBtn(onClear = onClear)
             }
 
             FilterKind()
-            FilterNeuter(neuter = request.neuterYn, setNeuter = {})
-            FilterState()
+            FilterNeuter(
+                neuter = request.neuterYn,
+                setNeuter = { setRequest(request.copy(neuterYn = it)) }
+            )
+            FilterState(
+                state = request.state,
+                setState = { setRequest(request.copy(state = it)) }
+            )
             FilterDate()
             FilterArea()
             FilterCare()
         }
 
+        BottomBtn(onConfirm = onConfirm, onDismiss = onDismiss)
+    }
+}
+
+@Composable
+private fun BottomBtn(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .padding(16.dp)
+            .height(56.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
         Button(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(56.dp),
+                .weight(1f)
+                .fillMaxHeight(),
+            colors = ButtonDefaults.buttonColors(
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ),
+            shape = RoundedCornerShape(12.dp),
+            onClick = {
+                onDismiss()
+            }) {
+
+            Text(
+                text = "취소",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+        }
+
+        Button(
+            modifier = Modifier
+                .weight(2f)
+                .fillMaxHeight(),
             colors = ButtonDefaults.buttonColors(
                 contentColor = MaterialTheme.colorScheme.onSecondary,
                 containerColor = MaterialTheme.colorScheme.secondary
             ),
             shape = RoundedCornerShape(12.dp),
             onClick = {
-                //todo
+                onConfirm()
                 onDismiss()
             }) {
 
@@ -202,71 +260,95 @@ private fun FilterContent(
 
 @Composable
 private inline fun FilterParent(
+    @DrawableRes icon: Int? = null,
     title: String,
-    particles: String,
     content: @Composable () -> Unit,
-
-    ) {
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(verticalAlignment = Alignment.Bottom) {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+
+            icon?.let {
+                Icon(
+                    modifier = Modifier.size(18.dp),
+                    painter = painterResource(id = it),
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = ""
+                )
+            }
+
             Text(
                 text = title,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = "$particles 선택해 주세요",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
-        Box(modifier = Modifier.size(60.dp))
         content()
     }
 }
 
 @Composable
 private fun FilterKind() {
-    FilterParent(title = "종류", particles = "를") {
+    FilterParent(icon = R.drawable.ic_paw_fill, title = "종류") {
+
 
     }
 }
 
 @Composable
-private fun FilterState() {
-    FilterParent(title = "공고 상태", particles = "를") {
+private fun FilterState(
+    state: String?,
+    setState: (String?) -> Unit
+) {
+    FilterParent(icon = R.drawable.ic_check_process, title = "공고 상태") {
+        var isExpanded by remember {
+            mutableStateOf(false)
+        }
 
+        DropDown(
+            text = "${NotificationStateType.entries.firstOrNull { it.code == state }?.text}",
+            isExpanded = isExpanded,
+            onClick = {
+                isExpanded = !isExpanded
+            }
+        ) {
+            NotificationStateType.entries.map {
+                DropDownItem(
+                    onItemClick = { setState(it.code) },
+                    onDismiss = { isExpanded = false },
+                    text = it.text
+                )
+            }
+        }
     }
 }
 
 @Composable
 private fun FilterDate() {
-    FilterParent(title = "날짜", particles = "를") {
+    FilterParent(icon = R.drawable.ic_calendar, title = "날짜") {
 
     }
 }
 
 @Composable
 private fun FilterArea() {
-    FilterParent(title = "지역", particles = "을") {
+    FilterParent(icon = R.drawable.ic_map_point, title = "지역") {
 
     }
 }
 
 @Composable
 private fun FilterCare() {
-    FilterParent(title = "보호소", particles = "를") {
+    FilterParent(icon = R.drawable.ic_house, title = "보호소") {
 
     }
 }
@@ -276,8 +358,27 @@ private fun FilterNeuter(
     neuter: String?,
     setNeuter: (String?) -> Unit
 ) {
-    FilterParent(title = "중성화 여부", particles = "를") {
-        NeuterType.entries.firstOrNull() { it.code == neuter }
+    FilterParent(icon = R.drawable.ic_adhesive_plaster, title = "중성화 여부") {
+
+        var isExpanded by remember {
+            mutableStateOf(false)
+        }
+
+        DropDown(
+            text = "${NeuterType.entries.firstOrNull { it.code == neuter }?.text}",
+            isExpanded = isExpanded,
+            onClick = {
+                isExpanded = !isExpanded
+            }
+        ) {
+            NeuterType.entries.map {
+                DropDownItem(
+                    onItemClick = { setNeuter(it.code) },
+                    onDismiss = { isExpanded = false },
+                    text = it.text
+                )
+            }
+        }
     }
 }
 
@@ -312,15 +413,27 @@ private fun RefreshBtn(onClear: () -> Unit) {
 @Composable
 private fun ContentPreview() {
     WithconimalTheme {
-        FilterContent(request = SearchAnimalRequest(), selectCnt = 0, onClear = {}, onDismiss = {})
+        FilterContent(
+            request = SearchAnimalRequest(),
+            selectCnt = 0,
+            onClear = {},
+            setRequest = {},
+            onConfirm = {},
+            onDismiss = {})
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0x000000)
 @Composable
 private fun ContentPreviewDark() {
     WithconimalTheme(darkTheme = true) {
-        FilterContent(request = SearchAnimalRequest(), selectCnt = 0, onClear = {}, onDismiss = {})
+        FilterContent(
+            request = SearchAnimalRequest(),
+            selectCnt = 0,
+            onClear = {},
+            setRequest = {},
+            onConfirm = {},
+            onDismiss = {})
     }
 }
 
