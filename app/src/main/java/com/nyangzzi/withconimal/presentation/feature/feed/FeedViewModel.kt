@@ -68,7 +68,18 @@ class FeedViewModel @Inject constructor(
 
     private fun updateRequest(request: SearchAnimalRequest) {
         _uiState.update {
-            it.copy(request = request, totalCnt = 0)
+            it.copy(request = request,
+                totalCnt = 0,
+                selectCnt = listOf(
+                    request.neuterYn,
+                    request.kind,
+                    request.upkind,
+                    request.bgnde,
+                    request.endde,
+                    request.careRegNo,
+                    request.state,
+                    request.uprCd
+                ).count { cnt -> cnt != null })
         }
     }
 

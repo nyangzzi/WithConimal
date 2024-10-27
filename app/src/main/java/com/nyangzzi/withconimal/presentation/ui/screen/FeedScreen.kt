@@ -69,40 +69,21 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
     val pagingItems = viewModel.animalPagingFlow.collectAsLazyPagingItems()
     val favoriteAnimal by viewModel.favoriteAnimal.collectAsStateWithLifecycle()
 
-    var selectCnt by remember {
-        mutableIntStateOf(0)
-    }
-
-    LaunchedEffect(key1 = uiState.request) {
-        if (pagingItems.loadState.refresh !is LoadState.Loading) {
-            viewModel.onEvent(FeedEvent.GetAnimalList)
-        }
-        selectCnt = listOf(
-            uiState.request.neuterYn,
-            uiState.request.kind,
-            uiState.request.upkind,
-            uiState.request.bgnde,
-            uiState.request.endde,
-            uiState.request.careRegNo,
-            uiState.request.state,
-            uiState.request.uprCd
-        ).count { it != null }
-    }
-
     FilterDialog(
         isShown = uiState.isShowFilter,
         searchAnimalRequest = uiState.request,
         onConfirm = {
             viewModel.onEvent(FeedEvent.UpdateRequest(it))
+            viewModel.onEvent(FeedEvent.GetAnimalList)
         },
-        selectCnt = selectCnt,
+        selectCnt = uiState.selectCnt,
         onDismiss = { viewModel.onEvent(FeedEvent.SetShowFilter(false)) })
 
     FeedContent(
         favoriteAnimal = favoriteAnimal,
         pagingItems = pagingItems,
         uiState = uiState,
-        selectCnt = selectCnt,
+        selectCnt = uiState.selectCnt,
         showFilterDialog = { viewModel.onEvent(FeedEvent.SetShowFilter(true)) },
         onClickContent = {
             viewModel.onEvent(FeedEvent.UpdateSelectInfo(data = it))
