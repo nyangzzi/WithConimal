@@ -186,6 +186,7 @@ fun DetailContent(
         }
         val animatedBoxHeight by animateDpAsState(targetValue = boxHeight, label = "")
 
+        val context = LocalContext.current
         Box(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -196,6 +197,9 @@ fun DetailContent(
                 processState = info.processState,
                 onClickImage = onClickImage,
                 onClickFavorite = onClickFavorite,
+                onShare = {
+                    Utils.shareAnimal(context = context, animalInfo = info)
+                },
                 imageUrl = info.popfile
             )
         }
@@ -263,6 +267,7 @@ private fun AnimalImage(
     onClickFavorite: () -> Unit,
     processState: String?,
     onClickImage: () -> Unit,
+    onShare: ()-> Unit,
     imageUrl: String?
 ) {
 
@@ -330,7 +335,7 @@ private fun AnimalImage(
 
             Icon(
                 modifier = iconModifier
-                    .clickable { }
+                    .clickable { onShare() }
                     .padding(8.dp),
                 painter = painterResource(id = R.drawable.ic_sharing),
                 contentDescription = "",

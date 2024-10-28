@@ -233,6 +233,7 @@ private fun FeedContent(
 
         var isRefreshing by remember { mutableStateOf(false) }
         val state = rememberPullToRefreshState()
+        val context = LocalContext.current
 
         LaunchedEffect(key1 = isRefreshing) {
             if (isRefreshing) {
@@ -293,6 +294,11 @@ private fun FeedContent(
                                                 pagingItems[item] ?: AnimalInfo()
                                             )
                                         )
+                                    },
+                                    onClickShare = {
+                                        pagingItems[item]?.let{
+                                            Utils.shareAnimal(context = context, animalInfo = it )
+                                        }
                                     }
                                 )
                             }
@@ -434,6 +440,7 @@ private fun AnimalComponent(
     processState: String?,
     kindCd: String,
     onClickFavorite: () -> Unit = {},
+    onClickShare:() -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -504,6 +511,10 @@ private fun AnimalComponent(
             )
 
             Icon(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .clickable { onClickShare() },
                 painter = painterResource(id = R.drawable.ic_sharing),
                 contentDescription = "",
                 tint = MaterialTheme.colorScheme.outline
