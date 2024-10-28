@@ -270,6 +270,7 @@ private fun BottomBtn(
 private inline fun FilterParent(
     @DrawableRes icon: Int? = null,
     title: String,
+    isIconTint: Boolean,
     content: @Composable () -> Unit,
 ) {
     Column(
@@ -288,7 +289,7 @@ private inline fun FilterParent(
                 Icon(
                     modifier = Modifier.size(18.dp),
                     painter = painterResource(id = it),
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = if (isIconTint) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     contentDescription = ""
                 )
             }
@@ -309,7 +310,7 @@ private fun FilterKind(
     kind: String?,
     setKind: (String?) -> Unit
 ) {
-    FilterParent(icon = R.drawable.ic_paw_fill, title = "종류") {
+    FilterParent(icon = R.drawable.ic_paw_fill, title = "종류", isIconTint = kind != null) {
 
         var isExpanded by remember {
             mutableStateOf(false)
@@ -338,7 +339,7 @@ private fun FilterState(
     state: String?,
     setState: (String?) -> Unit
 ) {
-    FilterParent(icon = R.drawable.ic_check_process, title = "공고 상태") {
+    FilterParent(icon = R.drawable.ic_check_process, title = "공고 상태", isIconTint = state != null) {
         var isExpanded by remember {
             mutableStateOf(false)
         }
@@ -376,7 +377,11 @@ private fun FilterDate(
         error = bgnde != null && endde != null && bgnde > endde
     }
 
-    FilterParent(icon = R.drawable.ic_calendar, title = "날짜") {
+    FilterParent(
+        icon = R.drawable.ic_calendar,
+        title = "날짜",
+        isIconTint = bgnde != null || endde != null
+    ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -414,14 +419,14 @@ private fun FilterDate(
 
 @Composable
 private fun FilterArea() {
-    FilterParent(icon = R.drawable.ic_map_point, title = "지역") {
+    FilterParent(icon = R.drawable.ic_map_point, title = "지역", isIconTint = false) {
 
     }
 }
 
 @Composable
 private fun FilterCare() {
-    FilterParent(icon = R.drawable.ic_house, title = "보호소") {
+    FilterParent(icon = R.drawable.ic_house, title = "보호소", isIconTint = false) {
 
     }
 }
@@ -431,7 +436,11 @@ private fun FilterNeuter(
     neuter: String?,
     setNeuter: (String?) -> Unit
 ) {
-    FilterParent(icon = R.drawable.ic_adhesive_plaster, title = "중성화 여부") {
+    FilterParent(
+        icon = R.drawable.ic_adhesive_plaster,
+        title = "중성화 여부",
+        isIconTint = neuter != null
+    ) {
 
         var isExpanded by remember {
             mutableStateOf(false)
