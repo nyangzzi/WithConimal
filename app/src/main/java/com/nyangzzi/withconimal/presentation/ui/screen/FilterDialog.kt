@@ -96,7 +96,8 @@ fun FilterDialog(
         }
 
         LaunchedEffect(key1 = request) {
-            isEnabled = searchAnimalRequest != request
+            isEnabled =
+                searchAnimalRequest != request && !(request.bgnde != null && request.endde != null && request.bgnde!! > request.endde!!)
         }
 
         ModalBottomSheet(
@@ -365,8 +366,16 @@ private fun FilterDate(
     bgnde: String?,
     setBgnde: (String?) -> Unit,
     endde: String?,
-    setEndde: (String?) -> Unit
+    setEndde: (String?) -> Unit,
 ) {
+    var error by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(bgnde, endde) {
+        error = bgnde != null && endde != null && bgnde > endde
+    }
+
     FilterParent(icon = R.drawable.ic_calendar, title = "날짜") {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -392,6 +401,13 @@ private fun FilterDate(
                     setEndde(it)
                 })
             }
+        }
+        if (error) {
+            Text(
+                "* 선택된 날짜를 확인해 주세요 (시작일 ≤ 종료일)",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
@@ -486,7 +502,7 @@ private fun ContentPreview() {
 private fun ContentPreviewDark() {
     WithconimalTheme(darkTheme = true) {
         FilterContent(
-            isEnabled= true,
+            isEnabled = true,
             request = SearchAnimalRequest(),
             selectCnt = 0,
             onClear = {},
