@@ -419,7 +419,7 @@ private fun DetailInfo(
                 tint = MaterialTheme.colorScheme.outline
             )
             Text(
-                text = kindCd ?: "",
+                text = kindCd?.replace("[개]", "[강아지]") ?: "",
                 fontSize = 20.sp,
                 fontWeight = FontWeight(600),
                 color = MaterialTheme.colorScheme.onSurface

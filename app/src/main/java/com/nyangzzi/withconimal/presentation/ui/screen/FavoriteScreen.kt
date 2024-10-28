@@ -188,7 +188,7 @@ private fun FavoriteAnimalList(
                     isFavorite = isFavorite,
                     imageUrl = favoriteAnimal[item].popfile ?: "",
                     processState = favoriteAnimal[item].processState,
-                    kindCd = favoriteAnimal[item].kindCd ?: "",
+                    kindCd = favoriteAnimal[item].kindCd?.replace("[개]", "[강아지]") ?: "",
                     onClickFavorite = {
                         if (isFavorite) onEvent(
                             FeedEvent.DeleteFavoriteAnimal(
@@ -264,6 +264,7 @@ private fun AnimalComponent(
             )
             Text(
                 text = kindCd.replace("[개] ", "")
+                    .replace("[강아지] ", "")
                     .replace("[고양이] ", "")
                     .replace("[기타축종] ", ""),
                 fontSize = 16.sp,

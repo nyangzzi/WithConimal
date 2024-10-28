@@ -410,7 +410,7 @@ private fun AnimalComponent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = kindCd,
+                text = kindCd.replace("[개]", "[강아지]"),
                 fontSize = 16.sp,
                 modifier = Modifier.weight(1f),
                 overflow = TextOverflow.Ellipsis,
