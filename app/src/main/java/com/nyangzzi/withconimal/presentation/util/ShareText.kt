@@ -91,12 +91,12 @@ fun getSharingAnimalInfoText(animalInfo: AnimalInfo) = "" +
         "\n" +
         "[입양 공고]\n" +
         "공고 번호: ${animalInfo.noticeNo}\n"+
-        "공고 일시: ${animalInfo.noticeSdt} ~ ${animalInfo.noticeEdt}\n"+
+        "공고 일시: ${Utils.dateFormat(animalInfo.noticeSdt)} ~ ${Utils.dateFormat(animalInfo.noticeEdt)}\n"+
         "공고 상태: ${animalInfo.processState}\n"+
         "\n" +
         "[유기 정보]\n" +
         "유기 번호: ${animalInfo.desertionNo}\n"+
-        "접수일: ${animalInfo.happenDt}\n"+
+        "접수일: ${Utils.dateFormat(animalInfo.happenDt)}\n"+
         "발견 장소: ${animalInfo.happenPlace}\n"+
         "\n" +
         "윗코니멀에서 더 많은 반려 동물들을 만나보세요!"
