@@ -76,6 +76,7 @@ class FeedViewModel @Inject constructor(
                     uprCd = event.uprCd,
                     orgCd = event.orgCd
                 )
+
                 is FeedEvent.GetCityList -> getCityList()
                 is FeedEvent.GetTownList -> getTownList(uprCd = event.uprCd)
             }
@@ -108,24 +109,23 @@ class FeedViewModel @Inject constructor(
     }
 
     private suspend fun getTownList(uprCd: String?) {
-        if(uprCd == null){
+        if (uprCd == null) {
             _uiState.update { it.copy(townList = null, careRoomList = null) }
-        }
-        else{
-        getTownListUseCase(uprCd = uprCd).collect { result ->
-            when (result) {
-                is ResultWrapper.Success -> _uiState.update { it.copy(townList = result.data) }
-                else -> {}
+        } else {
+            _uiState.update { it.copy(townList = null, careRoomList = null) }
+            getTownListUseCase(uprCd = uprCd).collect { result ->
+                when (result) {
+                    is ResultWrapper.Success -> _uiState.update { it.copy(townList = result.data) }
+                    else -> {}
+                }
             }
         }
     }
-    }
 
     private suspend fun getCareRoomList(uprCd: String?, orgCd: String?) {
-        if(uprCd == null || orgCd == null){
+        if (uprCd == null || orgCd == null) {
             _uiState.update { it.copy(careRoomList = null) }
-        }
-        else{
+        } else {
             _uiState.update { it.copy(careRoomList = null) }
             getCareRoomListUseCase(uprCd = uprCd, orgCd = orgCd).collect { result ->
                 when (result) {
