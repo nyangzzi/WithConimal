@@ -1,6 +1,11 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.kapt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -13,6 +18,12 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField(
+            "String",
+            "common_api_key",
+            getApiKey("common_api_key")
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -30,14 +41,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        JavaVersion.VERSION_17.toString()
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -59,6 +71,35 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material)
+
+    implementation(libs.gson)
+    implementation(libs.retrofit2)
+    implementation(libs.gson.converter)
+    implementation(libs.retrofit.scalars)
+    implementation(libs.logging.interceptor)
+
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.lifecycle.runtime.compose.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.navigation.compose)
+
+    implementation(libs.coil.compose)
+
+    implementation(libs.paging.compose)
+    implementation(libs.androidx.paging.common.android)
+    implementation(libs.paging.runtime)
+
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    implementation(libs.accompanist.placeholder.material)
+    implementation(libs.accompanist.swiperefresh)
+
+    implementation(libs.core.splash)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -66,4 +107,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+fun getApiKey(propertyKey: String): String {
+    val properties = Properties()
+    properties.load(File(rootDir, "local.properties").inputStream())
+    return properties.getProperty(propertyKey)
 }
