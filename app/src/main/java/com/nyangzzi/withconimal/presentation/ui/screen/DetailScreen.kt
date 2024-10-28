@@ -39,6 +39,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +71,8 @@ import com.nyangzzi.withconimal.presentation.feature.feed.FeedViewModel
 import com.nyangzzi.withconimal.presentation.util.Utils
 import com.nyangzzi.withconimal.presentation.util.noRippleClickable
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun DetailScreen(navController: NavHostController, viewModel: FeedViewModel) {
@@ -187,6 +190,7 @@ fun DetailContent(
         val animatedBoxHeight by animateDpAsState(targetValue = boxHeight, label = "")
 
         val context = LocalContext.current
+        val scope = rememberCoroutineScope()
         Box(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -198,7 +202,7 @@ fun DetailContent(
                 onClickImage = onClickImage,
                 onClickFavorite = onClickFavorite,
                 onShare = {
-                    Utils.shareAnimal(context = context, animalInfo = info)
+                    scope.launch { Utils.shareAnimal(context = context, animalInfo = info) }
                 },
                 imageUrl = info.popfile
             )
@@ -267,7 +271,7 @@ private fun AnimalImage(
     onClickFavorite: () -> Unit,
     processState: String?,
     onClickImage: () -> Unit,
-    onShare: ()-> Unit,
+    onShare: () -> Unit,
     imageUrl: String?
 ) {
 

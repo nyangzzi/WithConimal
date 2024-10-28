@@ -2,16 +2,64 @@ package com.nyangzzi.withconimal.presentation.util
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import androidx.core.content.FileProvider
+import coil.ImageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.domain.model.common.NeuterType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 
-fun shareText(context: Context, text: String) {
-    val shareIntent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, text)
-        type = "text/plain"
+fun shareImageAndText(context: Context, imageFile: File?, text: String) {
+    if(imageFile == null){
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, text)
+            type = "text/plain"
+        }
+        context.startActivity(Intent.createChooser(shareIntent, "[윗코니멀]"))
     }
-    context.startActivity(Intent.createChooser(shareIntent, "[윗코니멀]"))
+    else {
+        val uri =
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", imageFile)
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, text)       // 텍스트 추가
+            putExtra(Intent.EXTRA_STREAM, uri)      // 이미지 URI 추가
+            type = "image/*"                        // 타입 설정
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(shareIntent, "[윗코니멀]"))
+    }
+}
+
+suspend fun loadImageFromUrl(context: Context, imageUrl: String): Bitmap? {
+    return withContext(Dispatchers.IO) {
+        val loader = ImageLoader(context)
+        val request = ImageRequest.Builder(context)
+            .data(imageUrl)
+            .build()
+
+        val result = (loader.execute(request) as? SuccessResult)?.drawable
+        (result as? BitmapDrawable)?.bitmap
+    }
+}
+
+fun saveBitmapToFile(context: Context, bitmap: Bitmap?, fileName: String): File? {
+
+    if(bitmap == null) return null
+
+    val file = File(context.cacheDir, "$fileName.png") // 캐시 디렉토리에 저장
+    FileOutputStream(file).use { outputStream ->
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        outputStream.flush()
+    }
+    return file
 }
 
 fun getSharingAnimalInfoText(animalInfo: AnimalInfo) = "" +

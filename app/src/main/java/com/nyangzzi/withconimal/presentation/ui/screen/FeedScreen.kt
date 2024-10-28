@@ -234,6 +234,7 @@ private fun FeedContent(
         var isRefreshing by remember { mutableStateOf(false) }
         val state = rememberPullToRefreshState()
         val context = LocalContext.current
+        val scope = rememberCoroutineScope()
 
         LaunchedEffect(key1 = isRefreshing) {
             if (isRefreshing) {
@@ -296,8 +297,13 @@ private fun FeedContent(
                                         )
                                     },
                                     onClickShare = {
-                                        pagingItems[item]?.let{
-                                            Utils.shareAnimal(context = context, animalInfo = it )
+                                        pagingItems[item]?.let {
+                                            scope.launch {
+                                                Utils.shareAnimal(
+                                                    context = context,
+                                                    animalInfo = it
+                                                )
+                                            }
                                         }
                                     }
                                 )
@@ -440,7 +446,7 @@ private fun AnimalComponent(
     processState: String?,
     kindCd: String,
     onClickFavorite: () -> Unit = {},
-    onClickShare:() -> Unit = {},
+    onClickShare: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
