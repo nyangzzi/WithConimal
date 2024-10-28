@@ -90,6 +90,8 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
             viewModel.onEvent(FeedEvent.GetAnimalList)
         },
         selectCnt = uiState.selectCnt,
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
         onDismiss = { viewModel.onEvent(FeedEvent.SetShowFilter(false)) })
 
     FeedContent(

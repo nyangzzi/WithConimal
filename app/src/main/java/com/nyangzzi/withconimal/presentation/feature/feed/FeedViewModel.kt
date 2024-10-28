@@ -5,11 +5,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import com.nyangzzi.withconimal.data.network.ResultWrapper
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
 import com.nyangzzi.withconimal.domain.usecase.AddFavoriteAnimalUseCase
 import com.nyangzzi.withconimal.domain.usecase.DeleteFavoriteAnimalUseCase
+import com.nyangzzi.withconimal.domain.usecase.GetCareRoomListUseCase
+import com.nyangzzi.withconimal.domain.usecase.GetCityListUseCase
 import com.nyangzzi.withconimal.domain.usecase.GetFavoriteAnimalUseCase
+import com.nyangzzi.withconimal.domain.usecase.GetTownListUseCase
 import com.nyangzzi.withconimal.domain.usecase.SearchAnimalUseCase
 import com.nyangzzi.withconimal.domain.usecase.UpdateFavoriteAnimalUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +30,9 @@ class FeedViewModel @Inject constructor(
     private val getFavoriteAnimalUseCase: GetFavoriteAnimalUseCase,
     private val addFavoriteAnimalUseCase: AddFavoriteAnimalUseCase,
     private val deleteFavoriteAnimalUseCase: DeleteFavoriteAnimalUseCase,
+    private val getCityListUseCase: GetCityListUseCase,
+    private val getTownListUseCase: GetTownListUseCase,
+    private val getCareRoomListUseCase: GetCareRoomListUseCase,
 ) : ViewModel() {
 
     private var _uiState = MutableStateFlow(FeedUiState())
@@ -50,6 +57,9 @@ class FeedViewModel @Inject constructor(
         viewModelScope.launch {
             getFavoriteAnimal()
         }
+        viewModelScope.launch {
+            getCityList()
+        }
     }
 
     fun onEvent(event: FeedEvent) {
@@ -62,6 +72,12 @@ class FeedViewModel @Inject constructor(
                 is FeedEvent.DeleteFavoriteAnimal -> deleteFavoriteAnimal(animalInfo = event.animalInfo)
                 is FeedEvent.AddFavoriteAnimal -> addFavoriteAnimal(animalInfo = event.animalInfo)
                 is FeedEvent.GetAnimalList -> animalPagingFlow = getAnimalPager()
+                is FeedEvent.GetCareRoomList -> getCareRoomList(
+                    uprCd = event.uprCd,
+                    orgCd = event.orgCd
+                )
+                is FeedEvent.GetCityList -> getCityList()
+                is FeedEvent.GetTownList -> getTownList(uprCd = event.uprCd)
             }
         }
     }
@@ -74,11 +90,49 @@ class FeedViewModel @Inject constructor(
                     request.neuterYn,
                     request.kind,
                     request.upkind,
-                    if(request.bgnde == null && request.endde == null) null else "",
+                    if (request.bgnde == null && request.endde == null) null else "",
                     request.careRegNo,
                     request.state,
                     request.uprCd
                 ).count { cnt -> cnt != null })
+        }
+    }
+
+    private suspend fun getCityList() {
+        getCityListUseCase().collect { result ->
+            when (result) {
+                is ResultWrapper.Success -> _uiState.update { it.copy(cityList = result.data) }
+                else -> {}
+            }
+        }
+    }
+
+    private suspend fun getTownList(uprCd: String?) {
+        if(uprCd == null){
+            _uiState.update { it.copy(townList = null, careRoomList = null) }
+        }
+        else{
+        getTownListUseCase(uprCd = uprCd).collect { result ->
+            when (result) {
+                is ResultWrapper.Success -> _uiState.update { it.copy(townList = result.data) }
+                else -> {}
+            }
+        }
+    }
+    }
+
+    private suspend fun getCareRoomList(uprCd: String?, orgCd: String?) {
+        if(uprCd == null || orgCd == null){
+            _uiState.update { it.copy(careRoomList = null) }
+        }
+        else{
+            _uiState.update { it.copy(careRoomList = null) }
+            getCareRoomListUseCase(uprCd = uprCd, orgCd = orgCd).collect { result ->
+                when (result) {
+                    is ResultWrapper.Success -> _uiState.update { it.copy(careRoomList = result.data) }
+                    else -> {}
+                }
+            }
         }
     }
 

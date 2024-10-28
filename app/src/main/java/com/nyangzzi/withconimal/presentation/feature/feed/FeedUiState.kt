@@ -1,6 +1,9 @@
 package com.nyangzzi.withconimal.presentation.feature.feed
 
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
+import com.nyangzzi.withconimal.domain.model.common.CareRoomInfo
+import com.nyangzzi.withconimal.domain.model.common.CityInfo
+import com.nyangzzi.withconimal.domain.model.common.TownInfo
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
 
 data class FeedUiState (
@@ -13,5 +16,9 @@ data class FeedUiState (
     val selectCnt: Int = 0,
 
     val isPickDate: Boolean = false,
-    val request: SearchAnimalRequest = SearchAnimalRequest()
+    val request: SearchAnimalRequest = SearchAnimalRequest(),
+
+    val cityList: List<CityInfo>? = null,
+    val townList: List<TownInfo>? = null,
+    val careRoomList: List<CareRoomInfo>? = null,
 )

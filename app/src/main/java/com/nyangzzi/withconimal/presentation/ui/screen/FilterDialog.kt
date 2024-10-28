@@ -2,6 +2,7 @@ package com.nyangzzi.withconimal.presentation.ui.screen
 
 import android.app.Dialog
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,10 +59,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.nyangzzi.withconimal.R
+import com.nyangzzi.withconimal.domain.model.common.CareRoomInfo
+import com.nyangzzi.withconimal.domain.model.common.CityInfo
 import com.nyangzzi.withconimal.domain.model.common.KindType
 import com.nyangzzi.withconimal.domain.model.common.NeuterType
 import com.nyangzzi.withconimal.domain.model.common.NotificationStateType
+import com.nyangzzi.withconimal.domain.model.common.TownInfo
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
+import com.nyangzzi.withconimal.presentation.feature.feed.FeedEvent
+import com.nyangzzi.withconimal.presentation.feature.feed.FeedUiState
 import com.nyangzzi.withconimal.presentation.ui.component.DateButton
 import com.nyangzzi.withconimal.presentation.ui.component.DropDown
 import com.nyangzzi.withconimal.presentation.ui.component.DropDownItem
@@ -75,6 +82,8 @@ fun FilterDialog(
     searchAnimalRequest: SearchAnimalRequest,
     onConfirm: (SearchAnimalRequest) -> Unit,
     selectCnt: Int,
+    uiState: FeedUiState,
+    onEvent: (FeedEvent) -> Unit,
     onDismiss: () -> Unit
 ) {
 
@@ -100,6 +109,25 @@ fun FilterDialog(
                 searchAnimalRequest != request && !(request.bgnde != null && request.endde != null && request.bgnde!! > request.endde!!)
         }
 
+        LaunchedEffect(key1 = request.uprCd) {
+            if (request.uprCd == null) {
+                request = request.copy(orgCd = null)
+                onEvent(FeedEvent.GetTownList(uprCd = null))
+            } else {
+                onEvent(FeedEvent.GetTownList(uprCd = request.uprCd!!))
+            }
+
+        }
+
+        LaunchedEffect(key1 = request.orgCd) {
+            if (request.orgCd == null || request.uprCd == null) {
+                request = request.copy(careRegNo = null)
+                onEvent(FeedEvent.GetCareRoomList(uprCd = null, orgCd = null))
+            } else {
+                onEvent(FeedEvent.GetCareRoomList(uprCd = request.uprCd!!, orgCd = request.orgCd!!))
+            }
+        }
+
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
@@ -108,6 +136,7 @@ fun FilterDialog(
                 isEnabled = isEnabled,
                 request = request,
                 selectCnt = selectCnt,
+                uiState = uiState,
                 onDismiss = {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) {
@@ -135,6 +164,7 @@ private fun FilterContent(
     isEnabled: Boolean,
     request: SearchAnimalRequest,
     selectCnt: Int,
+    uiState: FeedUiState,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     onClear: () -> Unit,
@@ -185,8 +215,39 @@ private fun FilterContent(
                 kind = request.upkind,
                 setKind = { setRequest(request.copy(upkind = it)) }
             )
-            FilterArea()
-            FilterCare()
+            uiState.cityList?.let {
+                FilterArea(
+                    cityList = uiState.cityList,
+                    uprCd = request.uprCd,
+                    setUprCd = { setRequest(request.copy(uprCd = it)) },
+                    townList = uiState.townList ?: emptyList(),
+                    orgCd = request.orgCd,
+                    setOrgCd = { setRequest(request.copy(orgCd = it)) },
+                )
+            }
+
+            var isCareRoom by remember {
+                mutableStateOf(false)
+            }
+            
+            LaunchedEffect(key1 = uiState.careRoomList) {
+                isCareRoom = uiState.careRoomList?.isNotEmpty() ?: false
+            }
+            
+            uiState.careRoomList?.let {
+                Box(modifier = Modifier
+                    .animateContentSize()
+                    .heightIn(min = 0.dp)
+                    .let {
+                        if (isCareRoom) it else it.height(0.dp)
+                    }) {
+                    FilterCare(
+                        careRoomList = uiState.careRoomList,
+                        careRegNo = request.careRegNo,
+                        setCareRegNo = { setRequest(request.copy(careRegNo = it)) },
+                    )
+                }
+            }
             FilterDate(
                 bgnde = request.bgnde,
                 setBgnde = { setRequest(request.copy(bgnde = it)) },
@@ -418,16 +479,121 @@ private fun FilterDate(
 }
 
 @Composable
-private fun FilterArea() {
-    FilterParent(icon = R.drawable.ic_map_point, title = "지역", isIconTint = false) {
+private fun FilterArea(
+    cityList: List<CityInfo>,
+    uprCd: String?,
+    setUprCd: (String?) -> Unit,
+    townList: List<TownInfo>,
+    orgCd: String?,
+    setOrgCd: (String?) -> Unit
+) {
+    FilterParent(
+        icon = R.drawable.ic_map_point,
+        title = "지역",
+        isIconTint = uprCd != null
+    ) {
 
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+
+            Box(modifier = Modifier.weight(1f)) {
+                val cityAll by remember {
+                    mutableStateOf(listOf(CityInfo(orgCd = null, orgdownNm = "시/도")) + cityList)
+                }
+                var isCityExpanded by remember {
+                    mutableStateOf(false)
+                }
+
+                DropDown(
+                    text = "${cityAll.firstOrNull { it.orgCd == uprCd }?.orgdownNm}",
+                    isExpanded = isCityExpanded,
+                    onClick = {
+                        isCityExpanded = !isCityExpanded
+                    }
+                ) {
+                    cityAll.map {
+                        DropDownItem(
+                            onItemClick = { setUprCd(it.orgCd) },
+                            onDismiss = { isCityExpanded = false },
+                            text = if (it.orgdownNm == null || it.orgdownNm == "시/도") "전체" else it.orgdownNm
+                        )
+                    }
+                }
+
+            }
+
+            Box(modifier = Modifier.weight(1f)) {
+                val townAll = listOf(
+                    TownInfo(
+                        orgCd = null,
+                        uprCd = null,
+                        orgdownNm = "시/군/구"
+                    )
+                ) + townList
+
+                var isTownExpanded by remember {
+                    mutableStateOf(false)
+                }
+
+                DropDown(
+                    text = "${townAll.firstOrNull { it.orgCd == orgCd }?.orgdownNm}",
+                    isExpanded = isTownExpanded,
+                    isEnabled = uprCd != null && townList.isNotEmpty(),
+                    onClick = {
+                        isTownExpanded = !isTownExpanded
+                    }
+                ) {
+                    townAll.map {
+                        DropDownItem(
+                            onItemClick = { setOrgCd(it.orgCd) },
+                            onDismiss = { isTownExpanded = false },
+                            text = if (it.orgdownNm == null || it.orgdownNm == "시/군/구") "전체" else it.orgdownNm
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun FilterCare() {
-    FilterParent(icon = R.drawable.ic_house, title = "보호소", isIconTint = false) {
+private fun FilterCare(
+    careRoomList: List<CareRoomInfo>,
+    careRegNo: String?,
+    setCareRegNo: (String?) -> Unit
+) {
+    FilterParent(
+        icon = R.drawable.ic_house,
+        title = "보호소",
+        isIconTint = careRegNo != null
+    ) {
+        val careRoomAll = listOf(
+            CareRoomInfo(
+                careRegNo = null,
+                careNm = "전체"
+            )
+        ) + careRoomList
 
+        var isTownExpanded by remember {
+            mutableStateOf(false)
+        }
+
+        DropDown(
+            text = "${careRoomAll.firstOrNull { it.careRegNo == careRegNo }?.careNm}",
+            isExpanded = isTownExpanded,
+            onClick = {
+                isTownExpanded = !isTownExpanded
+            }
+        ) {
+            careRoomAll.map {
+                DropDownItem(
+                    onItemClick = { setCareRegNo(it.careRegNo) },
+                    onDismiss = { isTownExpanded = false },
+                    text = it.careNm ?: "전체"
+                )
+            }
+        }
     }
 }
 
@@ -498,6 +664,7 @@ private fun ContentPreview() {
         FilterContent(
             isEnabled = false,
             request = SearchAnimalRequest(),
+            uiState = FeedUiState(),
             selectCnt = 0,
             onClear = {},
             setRequest = {},
@@ -515,6 +682,7 @@ private fun ContentPreviewDark() {
             request = SearchAnimalRequest(),
             selectCnt = 0,
             onClear = {},
+            uiState = FeedUiState(),
             setRequest = {},
             onConfirm = {},
             onDismiss = {})

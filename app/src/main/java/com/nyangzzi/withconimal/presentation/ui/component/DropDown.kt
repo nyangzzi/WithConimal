@@ -37,12 +37,15 @@ import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
 fun DropDown(
     text: String,
     isExpanded: Boolean,
+    isEnabled: Boolean = true,
     onClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
     Column {
         DropDownButton(
-            text = text, isExpanded = isExpanded,
+            text = text,
+            isEnabled = isEnabled,
+            isExpanded = isExpanded,
             onClick = onClick
         )
 
@@ -85,9 +88,15 @@ inline fun DropDownItem(
 @Composable
 private fun DropDownButton(
     text: String,
+    isEnabled: Boolean,
     isExpanded: Boolean,
     onClick: () -> Unit
 ) {
+
+    val modifier = if (isEnabled) Modifier
+        .clickable { onClick() }
+        .padding(start = 16.dp, end = 12.dp) else Modifier.padding(start = 16.dp, end = 12.dp)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -98,14 +107,14 @@ private fun DropDownButton(
                 shape = RoundedCornerShape(6.dp)
             )
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = if (isEnabled) MaterialTheme.colorScheme.surfaceContainer
+                else MaterialTheme.colorScheme.inverseOnSurface,
                 shape = RoundedCornerShape(6.dp)
             )
             .clip(RoundedCornerShape(6.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp),
+            .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
 
         Text(
@@ -113,7 +122,8 @@ private fun DropDownButton(
             text = text,
             overflow = TextOverflow.Ellipsis,
             fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurface
+            color = if (isEnabled) MaterialTheme.colorScheme.onSurfaceVariant
+            else MaterialTheme.colorScheme.inverseSurface.copy(0.5f)
         )
 
         Icon(
@@ -122,7 +132,8 @@ private fun DropDownButton(
                 id =
                 if (isExpanded) R.drawable.ic_up_line else R.drawable.ic_down_line
             ), contentDescription = "",
-            tint = MaterialTheme.colorScheme.onSurface
+            tint = if (isEnabled) MaterialTheme.colorScheme.onSurfaceVariant
+            else MaterialTheme.colorScheme.inverseSurface.copy(0.5f)
         )
     }
 }
