@@ -1,5 +1,11 @@
 package com.nyangzzi.withconimal.presentation.ui.screen
 
+import androidx.compose.animation.Animatable
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,15 +48,21 @@ import coil.request.ImageRequest
 import com.nyangzzi.withconimal.R
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.fade
 import com.nyangzzi.withconimal.domain.model.common.AnimalInfo
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedEvent
 import com.nyangzzi.withconimal.presentation.feature.feed.FeedUiState
@@ -60,6 +72,8 @@ import com.nyangzzi.withconimal.presentation.util.Utils
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.launch
 
 @Composable
 fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
@@ -96,6 +110,7 @@ fun FeedScreen(navController: NavHostController, viewModel: FeedViewModel) {
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FeedContent(
     favoriteAnimal: List<AnimalInfo>,
@@ -214,82 +229,112 @@ private fun FeedContent(
 
         }
 
+        var isRefreshing by remember { mutableStateOf(false) }
+        val state = rememberPullToRefreshState()
 
-        Box {
+        LaunchedEffect(key1 = isRefreshing) {
+            if (isRefreshing) {
+                try {
+                    pagingItems?.refresh()
+                } finally {
+                    isRefreshing = false
+                }
+            }
+        }
+
+        Box() {
             val scrollState = rememberLazyListState()
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 4.dp),
-                state = scrollState,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+
+            PullToRefreshBox(
+                state = state,
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    isRefreshing = true
+                },
             ) {
 
-                pagingItems?.let {
-                    items(pagingItems.itemCount) { item ->
-                        Box(
-                            modifier = Modifier
-                                .padding(bottom = if (item == uiState.totalCnt - 1) 12.dp else 0.dp)
-                                .clip(shape = RoundedCornerShape(16.dp))
-                                .clickable {
-                                    pagingItems[item]?.let { onClickContent(it) }
-                                }
-                        ) {
-                            val isFavorite =
-                                favoriteAnimal.any { it.desertionNo == pagingItems[item]?.desertionNo }
-                            AnimalComponent(
-                                isFavorite = isFavorite,
-                                imageUrl = pagingItems[item]?.popfile ?: "",
-                                processState = pagingItems[item]?.processState,
-                                kindCd = pagingItems[item]?.kindCd ?: "",
-                                onClickFavorite = {
-                                    if (isFavorite) onEvent(
-                                        FeedEvent.DeleteFavoriteAnimal(
-                                            pagingItems[item] ?: AnimalInfo()
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 4.dp),
+                    state = scrollState,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    pagingItems?.let {
+                        items(pagingItems.itemCount) { item ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(bottom = if (item == uiState.totalCnt - 1) 12.dp else 0.dp)
+                                    .clip(shape = RoundedCornerShape(16.dp))
+                                    .clickable {
+                                        pagingItems[item]?.let { onClickContent(it) }
+                                    }
+                            ) {
+                                val isFavorite =
+                                    favoriteAnimal.any { it.desertionNo == pagingItems[item]?.desertionNo }
+                                AnimalComponent(
+                                    isFavorite = isFavorite,
+                                    imageUrl = pagingItems[item]?.popfile ?: "",
+                                    processState = pagingItems[item]?.processState,
+                                    kindCd = pagingItems[item]?.kindCd ?: "",
+                                    onClickFavorite = {
+                                        if (isFavorite) onEvent(
+                                            FeedEvent.DeleteFavoriteAnimal(
+                                                pagingItems[item] ?: AnimalInfo()
+                                            )
                                         )
-                                    )
-                                    else onEvent(
-                                        FeedEvent.AddFavoriteAnimal(
-                                            pagingItems[item] ?: AnimalInfo()
+                                        else onEvent(
+                                            FeedEvent.AddFavoriteAnimal(
+                                                pagingItems[item] ?: AnimalInfo()
+                                            )
                                         )
-                                    )
-                                }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    when {
+                        pagingItems?.loadState?.refresh is LoadState.Loading -> {
+                            item { AnimalComponentSkeleton() }
+                        }
+
+                        pagingItems?.loadState?.append is LoadState.Loading -> {
+                            item {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+                when (pagingItems?.loadState?.refresh) {
+                    is LoadState.NotLoading -> {
+                        if (pagingItems.itemCount == 0) {
+                            FeedEmptyList(errorText = "조회된 공고가 없어요", detailText = "조건을 다시 설정해 보세요")
+                        }
+                    }
+
+                    is LoadState.Error -> {
+                        if (pagingItems.itemCount == 0) {
+                            FeedEmptyList(
+                                errorText = "조회에 실패했어요",
+                                detailText = "다시 시도해 주세요",
+                                isSwipe = true
                             )
+                        } else {
+                            pagingItems.retry()
                         }
                     }
+
+                    else -> {}
                 }
 
-                when {
-                    pagingItems?.loadState?.refresh is LoadState.Loading -> {
-                        item { AnimalComponentSkeleton() }
-                    }
-
-                    pagingItems?.loadState?.append is LoadState.Loading -> {
-                        item {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    pagingItems?.loadState?.refresh is LoadState.Error -> {
-                        item {
-                            FeedEmptyList(errorText = "조회에 실패했어요", detailText = "다시 시도해 주세요")
-                        }
-                    }
-                }
             }
-            when {
-                pagingItems?.loadState?.refresh is LoadState.NotLoading -> {
-                    if (pagingItems.itemCount == 0) {
-                        FeedEmptyList(errorText = "조회된 공고가 없어요", detailText = "조건을 다시 설정해 보세요")
-                    }
-                }
-            }
-
             var isTop by remember { mutableStateOf(false) }
             LaunchedEffect(key1 = isTop) {
                 if (isTop) {
@@ -313,41 +358,70 @@ private fun FeedContent(
                 }
             }
 
+
         }
     }
 }
 
 @Composable
-private fun FeedEmptyList(errorText: String, detailText: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface),
-        verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+private fun FeedEmptyList(
+    isSwipe: Boolean = false,
+    errorText: String, detailText: String
+) {
+    Box {
 
-        Icon(
-            painter = painterResource(id = R.drawable.ic_fail_square),
-            modifier = Modifier.size(56.dp),
-            contentDescription = "",
-            tint = MaterialTheme.colorScheme.onSurface
-        )
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = errorText,
-                fontWeight = FontWeight.Medium,
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onSurface
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.surface),
+            verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Icon(
+                painter = painterResource(id = R.drawable.ic_fail_square),
+                modifier = Modifier.size(56.dp),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.onSurface
             )
-            Text(
-                text = detailText,
-                fontWeight = FontWeight.Medium,
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = errorText,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = detailText,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
 
+        if (isSwipe) {
+
+            val color = remember { Animatable(Color.DarkGray) }
+            LaunchedEffect(Unit) {
+                color.animateTo(
+                    Color.LightGray, animationSpec = infiniteRepeatable(
+                        animation = tween(durationMillis = 1500),
+                        repeatMode = RepeatMode.Reverse
+                    )
+                )
+            }
+
+            Icon(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(16.dp)
+                    .size(36.dp),
+                painter = painterResource(id = R.drawable.ic_double_down),
+                contentDescription = "",
+                tint = color.value
+            )
+        }
     }
 }
 
@@ -467,7 +541,11 @@ private fun AnimalComponentSkeleton(
                 highlight = PlaceholderHighlight.shimmer()
             )
 
-        Box(modifier = modifier.fillMaxWidth().height(200.dp))
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(200.dp)
+        )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(modifier = modifier.size(width = 122.dp, height = 26.dp))

@@ -95,6 +95,7 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(libs.accompanist.placeholder.material)
+    implementation(libs.accompanist.swiperefresh)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
