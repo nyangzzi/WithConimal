@@ -74,8 +74,7 @@ class FeedViewModel @Inject constructor(
                     request.neuterYn,
                     request.kind,
                     request.upkind,
-                    request.bgnde,
-                    request.endde,
+                    if(request.bgnde == null && request.endde == null) null else "",
                     request.careRegNo,
                     request.state,
                     request.uprCd

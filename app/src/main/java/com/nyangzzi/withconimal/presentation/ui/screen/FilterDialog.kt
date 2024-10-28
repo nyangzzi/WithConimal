@@ -61,6 +61,7 @@ import com.nyangzzi.withconimal.domain.model.common.KindType
 import com.nyangzzi.withconimal.domain.model.common.NeuterType
 import com.nyangzzi.withconimal.domain.model.common.NotificationStateType
 import com.nyangzzi.withconimal.domain.model.network.request.SearchAnimalRequest
+import com.nyangzzi.withconimal.presentation.ui.component.DateButton
 import com.nyangzzi.withconimal.presentation.ui.component.DropDown
 import com.nyangzzi.withconimal.presentation.ui.component.DropDownItem
 import com.nyangzzi.withconimal.ui.theme.WithconimalTheme
@@ -86,8 +87,16 @@ fun FilterDialog(
             mutableStateOf(SearchAnimalRequest())
         }
 
+        var isEnabled by remember {
+            mutableStateOf(false)
+        }
+
         LaunchedEffect(key1 = searchAnimalRequest) {
             request = searchAnimalRequest
+        }
+
+        LaunchedEffect(key1 = request) {
+            isEnabled = searchAnimalRequest != request
         }
 
         ModalBottomSheet(
@@ -95,6 +104,7 @@ fun FilterDialog(
             sheetState = sheetState,
         ) {
             FilterContent(
+                isEnabled = isEnabled,
                 request = request,
                 selectCnt = selectCnt,
                 onDismiss = {
@@ -121,6 +131,7 @@ fun FilterDialog(
 
 @Composable
 private fun FilterContent(
+    isEnabled: Boolean,
     request: SearchAnimalRequest,
     selectCnt: Int,
     onConfirm: () -> Unit,
@@ -175,7 +186,12 @@ private fun FilterContent(
             )
             FilterArea()
             FilterCare()
-            FilterDate()
+            FilterDate(
+                bgnde = request.bgnde,
+                setBgnde = { setRequest(request.copy(bgnde = it)) },
+                endde = request.endde,
+                setEndde = { setRequest(request.copy(endde = it)) },
+            )
             FilterState(
                 state = request.state,
                 setState = { setRequest(request.copy(state = it)) }
@@ -186,12 +202,13 @@ private fun FilterContent(
             )
         }
 
-        BottomBtn(onConfirm = onConfirm, onDismiss = onDismiss)
+        BottomBtn(isEnabled = isEnabled, onConfirm = onConfirm, onDismiss = onDismiss)
     }
 }
 
 @Composable
 private fun BottomBtn(
+    isEnabled: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -227,6 +244,7 @@ private fun BottomBtn(
             modifier = Modifier
                 .weight(2f)
                 .fillMaxHeight(),
+            enabled = isEnabled,
             colors = ButtonDefaults.buttonColors(
                 contentColor = MaterialTheme.colorScheme.onSecondary,
                 containerColor = MaterialTheme.colorScheme.secondary
@@ -343,9 +361,38 @@ private fun FilterState(
 }
 
 @Composable
-private fun FilterDate() {
+private fun FilterDate(
+    bgnde: String?,
+    setBgnde: (String?) -> Unit,
+    endde: String?,
+    setEndde: (String?) -> Unit
+) {
     FilterParent(icon = R.drawable.ic_calendar, title = "날짜") {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
+            val modifier = Modifier.weight(1f)
+            Box(modifier = modifier) {
+                DateButton(text = bgnde, onClick = {
+                    setBgnde(it)
+                })
+            }
+
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = R.drawable.ic_tilde),
+                contentDescription = "",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+
+            Box(modifier = modifier) {
+                DateButton(text = endde, onClick = {
+                    setEndde(it)
+                })
+            }
+        }
     }
 }
 
@@ -424,6 +471,7 @@ private fun RefreshBtn(onClear: () -> Unit) {
 private fun ContentPreview() {
     WithconimalTheme {
         FilterContent(
+            isEnabled = false,
             request = SearchAnimalRequest(),
             selectCnt = 0,
             onClear = {},
@@ -438,6 +486,7 @@ private fun ContentPreview() {
 private fun ContentPreviewDark() {
     WithconimalTheme(darkTheme = true) {
         FilterContent(
+            isEnabled= true,
             request = SearchAnimalRequest(),
             selectCnt = 0,
             onClear = {},
