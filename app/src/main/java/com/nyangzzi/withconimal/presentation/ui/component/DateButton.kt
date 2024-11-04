@@ -74,7 +74,11 @@ fun DateButton(
     val datePickerDialog = DatePickerDialog(
         themedContext,
         { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            onClick("$year${month + 1}$dayOfMonth")
+            onClick(
+                "$year${(month + 1).toString().padStart(2, '0')}${
+                    dayOfMonth.toString().padStart(2, '0')
+                }"
+            )
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
