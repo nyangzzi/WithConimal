@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +57,13 @@ fun DateButton(
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
+        .apply {
+            text?.let {
+                set(Calendar.YEAR, text.substring(0, 4).toInt())
+                set(Calendar.MONTH, text.substring(4, 6).toInt() - 1)
+                set(Calendar.DAY_OF_MONTH, text.substring(6, 8).toInt())
+            }
+        }
 
     val isDarkTheme =
         when (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) {
