@@ -103,12 +103,13 @@ private fun DropDownButton(
             .height(48.dp)
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.surfaceVariant,
+                color = if (isEnabled) MaterialTheme.colorScheme.surfaceVariant
+                else MaterialTheme.colorScheme.surfaceContainer,
                 shape = RoundedCornerShape(6.dp)
             )
             .background(
                 color = if (isEnabled) MaterialTheme.colorScheme.surfaceContainer
-                else MaterialTheme.colorScheme.inverseOnSurface,
+                else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(6.dp)
             )
             .clip(RoundedCornerShape(6.dp))
@@ -123,7 +124,7 @@ private fun DropDownButton(
             overflow = TextOverflow.Ellipsis,
             fontSize = 16.sp,
             color = if (isEnabled) MaterialTheme.colorScheme.onSurfaceVariant
-            else MaterialTheme.colorScheme.inverseSurface.copy(0.5f)
+            else MaterialTheme.colorScheme.inverseSurface.copy(0.4f)
         )
 
         Icon(
@@ -133,7 +134,7 @@ private fun DropDownButton(
                 if (isExpanded) R.drawable.ic_up_line else R.drawable.ic_down_line
             ), contentDescription = "",
             tint = if (isEnabled) MaterialTheme.colorScheme.onSurfaceVariant
-            else MaterialTheme.colorScheme.inverseSurface.copy(0.5f)
+            else MaterialTheme.colorScheme.inverseSurface.copy(0.4f)
         )
     }
 }

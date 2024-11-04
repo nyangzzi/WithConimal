@@ -499,7 +499,7 @@ private fun FilterArea(
 
             Box(modifier = Modifier.weight(1f)) {
                 val cityAll by remember {
-                    mutableStateOf(listOf(CityInfo(orgCd = null, orgdownNm = "시/도")) + cityList)
+                    mutableStateOf(listOf(CityInfo(orgCd = null, orgdownNm = "시/도 전체")) + cityList)
                 }
                 var isCityExpanded by remember {
                     mutableStateOf(false)
@@ -516,7 +516,7 @@ private fun FilterArea(
                         DropDownItem(
                             onItemClick = { setUprCd(it.orgCd) },
                             onDismiss = { isCityExpanded = false },
-                            text = if (it.orgdownNm == null || it.orgdownNm == "시/도") "전체" else it.orgdownNm
+                            text = it.orgdownNm ?: "시/도 전체"
                         )
                     }
                 }
@@ -528,7 +528,7 @@ private fun FilterArea(
                     TownInfo(
                         orgCd = null,
                         uprCd = null,
-                        orgdownNm = "시/군/구"
+                        orgdownNm = "시/군/구 전체"
                     )
                 ) + townList
 
@@ -548,7 +548,7 @@ private fun FilterArea(
                         DropDownItem(
                             onItemClick = { setOrgCd(it.orgCd) },
                             onDismiss = { isTownExpanded = false },
-                            text = if (it.orgdownNm == null || it.orgdownNm == "시/군/구") "전체" else it.orgdownNm
+                            text = it.orgdownNm ?: "시/군/구 전체"
                         )
                     }
                 }
