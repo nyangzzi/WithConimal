@@ -66,8 +66,8 @@ fun DateButton(
     val themedContext: Context =
         ContextThemeWrapper(
             context,
-            if (isDarkTheme) android.R.style.ThemeOverlay_Material_Dark
-            else android.R.style.ThemeOverlay_Material_Light
+            if (isDarkTheme) android.R.style.Theme_Material_Dialog
+            else android.R.style.Theme_Material_Light_Dialog
         )
 
     // DatePickerDialog 객체
