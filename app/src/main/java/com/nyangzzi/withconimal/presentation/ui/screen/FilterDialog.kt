@@ -470,7 +470,7 @@ private fun FilterDate(
         }
         if (error) {
             Text(
-                "* 선택된 날짜를 확인해 주세요 (시작일 ≤ 종료일)",
+                "* 시작일이 종료일보다 작아야 합니다",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.error
             )
